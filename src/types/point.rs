@@ -2,18 +2,6 @@ use std::fmt;
 
 use approx::relative_eq;
 
-// #[derive(Copy, Clone, Debug, PartialEq)]
-// struct Point<T, U> {
-//     x: T,
-//     y: U,
-// }
-
-// impl<T, U> Point<T, U> {
-//     pub fn new(x: T, y: U) -> Self {
-//         Self { x, y }
-//     }
-// }
-
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct IPoint {
     x: i64,
@@ -46,6 +34,16 @@ impl IPoint {
     pub fn new(x: i64, y: i64) -> Self {
         Self { x, y }
     }
+
+    pub fn into_fpoint(self) -> FPoint {
+        self.into()
+    }
+}
+
+impl From<FPoint> for IPoint {
+    fn from(item: FPoint) -> Self {
+        IPoint { x: item.x.round() as i64, y: item.y.round() as i64 }
+    }
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -57,6 +55,12 @@ pub struct FPoint {
 impl Default for FPoint {
     fn default() -> Self {
         Self::new(0.0, 0.0)
+    }
+}
+
+impl fmt::Display for FPoint {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
     }
 }
 
@@ -84,11 +88,15 @@ impl FPoint {
     pub fn approx_eq(&self, f: &FPoint) -> bool {
         relative_eq!(self.x, f.x) && relative_eq!(self.y, f.y)
     }
+
+    pub fn into_ipoint(self) -> IPoint {
+        self.into()
+    }
 }
 
-impl fmt::Display for FPoint {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "({}, {})", self.x, self.y)
+impl From<IPoint> for FPoint {
+    fn from(item: IPoint) -> Self {
+        FPoint { x: item.x as f64, y: item.y as f64 }
     }
 }
 
@@ -167,6 +175,14 @@ mod tests {
     fn ipoint_display_trait() {
         let pt = IPoint::new(1, 2);
         assert_eq!(format!("{}", pt), "(1, 2)");
+    }
+
+    #[test]
+    fn ipoint_from_into_trait_cast_fpoint() {
+        let pt1 = IPoint::new(1, 2);
+        let pt2 = FPoint::new(1.0, 2.0);
+        assert_eq!(FPoint::from(pt1), pt2);
+        assert_eq!(pt1.into_fpoint(), pt2);
     }
 
     // FPoint
@@ -259,5 +275,17 @@ mod tests {
     fn fpoint_display_trait() {
         let pt = FPoint::new(1.001, 2.02);
         assert_eq!(format!("{}", pt), "(1.001, 2.02)");
+    }
+
+    #[test]
+    fn fpoint_from_into_trait_cast_ipoint() {
+        let pt1 = IPoint::new(1, 2);
+        let pt2 = FPoint::new(1.0, 2.0);
+        let pt3 = FPoint::new(1.1, 1.9);
+        assert_eq!(IPoint::from(pt2), pt1);
+        assert_eq!(pt2.into_ipoint(), pt1);
+        // the cast uses f64.round() as i64
+        assert_eq!(IPoint::from(pt3), pt1);
+        assert_eq!(pt3.into_ipoint(), pt1);
     }
 }
