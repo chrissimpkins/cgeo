@@ -207,7 +207,7 @@ mod tests {
         assert!(pt1 == pt2);
         assert!(pt1 != pt3);
         assert!(pt3 != pt1);
-        // points above epsilon are "different" at values near zero
+        // points with differences above epsilon are "different" at values near zero
         // where the relative difference is magnified
         assert!(pt1 != pt4);
         assert!(pt4 != pt1);
