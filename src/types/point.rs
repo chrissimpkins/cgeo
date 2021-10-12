@@ -154,11 +154,13 @@ mod tests {
         // relative equality resolves to true for values that are
         // significantly above or below "zero".
         assert!(pt9 == pt8);
+        assert!(pt8 == pt9);
         // but not when coordinate values approach "zero"
         // where a point is considered "different"
         assert!(x_zero_exceed_epsilon != 0.0);
         assert!(y_zero_exceed_epsilon != 0.0);
         assert!(pt4 != pt10);
+        assert!(pt10 != pt4);
     }
 
     #[test]
@@ -199,14 +201,20 @@ mod tests {
         let x_exceed_epsilon = 0.0 + ABOVE_F64_EPSILON; // just above f64::EPSILON
         let y_exceed_epsilon = 0.0 + ABOVE_F64_EPSILON; // just above f64::EPSILON
         let pt4 = FPoint::new(x_exceed_epsilon, y_exceed_epsilon);
+        let pt5 = IPoint::new(0, 0);
         assert_ne!(x_exceed_epsilon, 0.0);
         assert_ne!(y_exceed_epsilon, 0.0);
-        assert_ne!(pt1, pt4);
-        assert_eq!(pt1, pt2);
-        assert_ne!(pt1, pt3);
-        // points are "different" at values near zero
-        // where the relative difference is greatly magnified
+        assert!(pt1 == pt2);
+        assert!(pt1 != pt3);
+        assert!(pt3 != pt1);
+        // points above epsilon are "different" at values near zero
+        // where the relative difference is magnified
         assert!(pt1 != pt4);
+        assert!(pt4 != pt1);
+        // and on comparisons with integer casts that occur with
+        // IPoint to FPoint tests
+        assert!(pt4 != pt5);
+        assert!(pt5 != pt4);
     }
 
     #[test]
@@ -218,10 +226,10 @@ mod tests {
         let pt5 = FPoint::new(0.0, 0.0);
         let pt6 = IPoint::new(-2, -3);
         let pt7 = FPoint::new(-2.0, -3.0);
-        let x_exceed_epsilon = 0.01 + ABOVE_F64_EPSILON; // just above f64::EPSILON
-        let y_exceed_epsilon = 0.01 + ABOVE_F64_EPSILON; // just above f64::EPSILON
+        let x_exceed_epsilon = 1.0 + ABOVE_F64_EPSILON; // just above f64::EPSILON
+        let y_exceed_epsilon = 1.0 + ABOVE_F64_EPSILON; // just above f64::EPSILON
         let pt8 = FPoint::new(x_exceed_epsilon, y_exceed_epsilon);
-        let pt9 = FPoint::new(0.01, 0.01);
+        let pt9 = IPoint::new(1, 1);
         assert_ne!(x_exceed_epsilon, 0.01);
         assert_ne!(y_exceed_epsilon, 0.01);
         assert!(pt1 == pt2);
@@ -231,6 +239,7 @@ mod tests {
         // points are "the same" at locations significantly above / below
         // "zero" even though the absolute difference is above the f64 epsilon value
         assert!(pt9 == pt8);
+        assert!(pt8 == pt9);
     }
 
     #[test]
