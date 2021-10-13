@@ -2,10 +2,52 @@ use std::fmt;
 
 use approx::relative_eq;
 
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum CartesianCoordValType {
+    I64,
+    F64,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum PolarCoordValType {
+    Radians,
+    Degrees,
+}
+
+pub trait CartesianCoordinateType {
+    type CoordNumberType;
+    fn type_of(&self) -> CartesianCoordValType;
+    fn get_x(&self) -> Self::CoordNumberType;
+    fn get_y(&self) -> Self::CoordNumberType;
+}
+pub trait PolarCoordinateType {
+    fn type_of(&self) -> PolarCoordValType {
+        PolarCoordValType::Radians
+    }
+    fn get_degrees(&self) -> f64;
+    fn get_radians(&self) -> f64;
+    fn get_radius(&self) -> f64;
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct I2DCoordinate {
     pub x: i64,
     pub y: i64,
+}
+
+impl CartesianCoordinateType for I2DCoordinate {
+    type CoordNumberType = i64;
+    fn type_of(&self) -> CartesianCoordValType {
+        CartesianCoordValType::I64
+    }
+
+    fn get_x(&self) -> Self::CoordNumberType {
+        self.x
+    }
+
+    fn get_y(&self) -> Self::CoordNumberType {
+        self.y
+    }
 }
 
 impl Default for I2DCoordinate {
@@ -63,6 +105,22 @@ impl From<PolarCoordinate> for I2DCoordinate {
 pub struct F2DCoordinate {
     pub x: f64,
     pub y: f64,
+}
+
+impl CartesianCoordinateType for F2DCoordinate {
+    type CoordNumberType = f64;
+
+    fn type_of(&self) -> CartesianCoordValType {
+        CartesianCoordValType::F64
+    }
+
+    fn get_x(&self) -> Self::CoordNumberType {
+        self.x
+    }
+
+    fn get_y(&self) -> Self::CoordNumberType {
+        self.y
+    }
 }
 
 impl Default for F2DCoordinate {
@@ -129,6 +187,20 @@ pub struct PolarCoordinate {
     pub theta: f64,
 }
 
+impl PolarCoordinateType for PolarCoordinate {
+    fn get_degrees(&self) -> f64 {
+        self.theta.to_degrees()
+    }
+
+    fn get_radians(&self) -> f64 {
+        self.theta
+    }
+
+    fn get_radius(&self) -> f64 {
+        self.r
+    }
+}
+
 impl Default for PolarCoordinate {
     fn default() -> Self {
         Self::new(0.0, 0.0)
@@ -158,10 +230,6 @@ impl PolarCoordinate {
 
     pub fn approx_eq(&self, other: &PolarCoordinate) -> bool {
         relative_eq!(self.r, other.r) && relative_eq!(self.theta, other.theta)
-    }
-
-    pub fn degrees(&self) -> f64 {
-        self.theta.to_degrees()
     }
 
     pub fn into_i2dcoord(self) -> I2DCoordinate {
@@ -207,6 +275,7 @@ mod tests {
         let coord = I2DCoordinate::default();
         assert_eq!(coord.x, 0);
         assert_eq!(coord.y, 0);
+        assert_eq!(coord.type_of(), CartesianCoordValType::I64);
     }
 
     #[test]
@@ -214,6 +283,14 @@ mod tests {
         let coord = I2DCoordinate::new(2, 3);
         assert_eq!(coord.x, 2);
         assert_eq!(coord.y, 3);
+        assert_eq!(coord.type_of(), CartesianCoordValType::I64);
+    }
+
+    #[test]
+    fn i2dcoordinate_getters() {
+        let coord = I2DCoordinate::new(2, 3);
+        assert_eq!(coord.get_x(), 2_i64);
+        assert_eq!(coord.get_y(), 3_i64);
     }
 
     #[test]
@@ -224,7 +301,7 @@ mod tests {
         let coord4 = I2DCoordinate::new(3, 5);
         let coord5 = I2DCoordinate::new(4, 4);
         assert_eq!(coord1, coord2);
-        assert_ne!(coord1, coord3);
+        assert_ne!(coord1, coord3); // both x and y differ
         assert_ne!(coord1, coord4); // y differ
         assert_ne!(coord1, coord5); // x differ
     }
@@ -292,6 +369,7 @@ mod tests {
         let coord = F2DCoordinate::default();
         assert_relative_eq!(coord.x, 0.0);
         assert_relative_eq!(coord.y, 0.0);
+        assert_eq!(coord.type_of(), CartesianCoordValType::F64);
     }
 
     #[test]
@@ -299,6 +377,14 @@ mod tests {
         let coord = F2DCoordinate::new(1.01, 2.03);
         assert_relative_eq!(coord.x, 1.01);
         assert_relative_eq!(coord.y, 2.03);
+        assert_eq!(coord.type_of(), CartesianCoordValType::F64);
+    }
+
+    #[test]
+    fn f2dcoordinate_getters() {
+        let coord = F2DCoordinate::new(1.01, 2.03);
+        assert_relative_eq!(coord.get_x(), 1.01_f64);
+        assert_relative_eq!(coord.get_y(), 2.03_f64);
     }
 
     #[test]
@@ -405,6 +491,7 @@ mod tests {
         let coord = PolarCoordinate::default();
         assert_relative_eq!(coord.r, 0.0);
         assert_relative_eq!(coord.theta, 0.0);
+        assert_eq!(coord.type_of(), PolarCoordValType::Radians);
     }
 
     #[test]
@@ -412,6 +499,7 @@ mod tests {
         let coord = PolarCoordinate::new(2.0, 0.7853981633974483);
         assert_relative_eq!(coord.r, 2.0);
         assert_relative_eq!(coord.theta, 0.7853981633974483);
+        assert_eq!(coord.type_of(), PolarCoordValType::Radians);
     }
 
     #[test]
@@ -470,9 +558,11 @@ mod tests {
     }
 
     #[test]
-    fn polarcoordinate_degrees() {
+    fn polarcoordinate_getters() {
         let coord = PolarCoordinate::new(14.142135623730951, 0.7853981633974483);
-        assert_relative_eq!(coord.degrees(), 45.0);
+        assert_relative_eq!(coord.get_degrees(), 45.0);
+        assert_relative_eq!(coord.get_radians(), 0.7853981633974483);
+        assert_relative_eq!(coord.get_radius(), 14.142135623730951);
     }
 
     #[test]
