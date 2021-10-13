@@ -4,8 +4,8 @@ use approx::relative_eq;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct I2DCoordinate {
-    x: i64,
-    y: i64,
+    pub x: i64,
+    pub y: i64,
 }
 
 impl Default for I2DCoordinate {
@@ -61,8 +61,8 @@ impl From<PolarCoordinate> for I2DCoordinate {
 
 #[derive(Copy, Clone, Debug)]
 pub struct F2DCoordinate {
-    x: f64,
-    y: f64,
+    pub x: f64,
+    pub y: f64,
 }
 
 impl Default for F2DCoordinate {
@@ -125,8 +125,8 @@ impl From<PolarCoordinate> for F2DCoordinate {
 
 #[derive(Copy, Clone, Debug)]
 pub struct PolarCoordinate {
-    r: f64,
-    theta: f64,
+    pub r: f64,
+    pub theta: f64,
 }
 
 impl Default for PolarCoordinate {
