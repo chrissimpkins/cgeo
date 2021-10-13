@@ -38,11 +38,24 @@ impl I2DCoordinate {
     pub fn into_f2dcoord(self) -> F2DCoordinate {
         self.into()
     }
+
+    pub fn into_polarcoord(self) -> PolarCoordinate {
+        self.into()
+    }
 }
 
 impl From<F2DCoordinate> for I2DCoordinate {
     fn from(item: F2DCoordinate) -> Self {
         I2DCoordinate { x: item.x.round() as i64, y: item.y.round() as i64 }
+    }
+}
+
+impl From<PolarCoordinate> for I2DCoordinate {
+    fn from(item: PolarCoordinate) -> Self {
+        Self {
+            x: (item.r * item.theta.cos()).round() as i64,
+            y: (item.r * item.theta.sin()).round() as i64,
+        }
     }
 }
 
@@ -70,7 +83,7 @@ impl fmt::Display for F2DCoordinate {
 /// [Comparing Floating Point Numbers, 2012 Edition](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/)
 impl PartialEq for F2DCoordinate {
     fn eq(&self, other: &F2DCoordinate) -> bool {
-        relative_eq!(self.x, other.x) && relative_eq!(self.y, other.y)
+        self.approx_eq(other)
     }
 }
 
@@ -92,6 +105,10 @@ impl F2DCoordinate {
     pub fn into_i2dcoord(self) -> I2DCoordinate {
         self.into()
     }
+
+    pub fn into_polarcoord(self) -> PolarCoordinate {
+        self.into()
+    }
 }
 
 impl From<I2DCoordinate> for F2DCoordinate {
@@ -100,9 +117,84 @@ impl From<I2DCoordinate> for F2DCoordinate {
     }
 }
 
+impl From<PolarCoordinate> for F2DCoordinate {
+    fn from(item: PolarCoordinate) -> Self {
+        Self { x: item.r * item.theta.cos(), y: item.r * item.theta.sin() }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct PolarCoordinate {
+    r: f64,
+    theta: f64,
+}
+
+impl Default for PolarCoordinate {
+    fn default() -> Self {
+        Self::new(0.0, 0.0)
+    }
+}
+
+impl fmt::Display for PolarCoordinate {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({}, {})", self.r, self.theta)
+    }
+}
+
+/// The PartialEq trait for the F2DCoordinate struct uses the relative epsilon float equality testing implementation
+/// as defined by the approx library. The test uses a relative comparison if the values are far apart.
+/// This implementation is based on the approach described in
+/// [Comparing Floating Point Numbers, 2012 Edition](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/)
+impl PartialEq for PolarCoordinate {
+    fn eq(&self, other: &PolarCoordinate) -> bool {
+        self.approx_eq(other)
+    }
+}
+
+impl PolarCoordinate {
+    pub fn new(r: f64, theta: f64) -> Self {
+        Self { r, theta }
+    }
+
+    pub fn approx_eq(&self, other: &PolarCoordinate) -> bool {
+        relative_eq!(self.r, other.r) && relative_eq!(self.theta, other.theta)
+    }
+
+    pub fn degrees(&self) -> f64 {
+        self.theta.to_degrees()
+    }
+
+    pub fn into_i2dcoord(self) -> I2DCoordinate {
+        self.into()
+    }
+
+    pub fn into_f2dcoord(self) -> F2DCoordinate {
+        self.into()
+    }
+}
+
+impl From<F2DCoordinate> for PolarCoordinate {
+    fn from(item: F2DCoordinate) -> Self {
+        let r = (item.x.powi(2) + item.y.powi(2)).sqrt();
+        let theta = (item.y / item.x).atan();
+        Self { r, theta }
+    }
+}
+
+impl From<I2DCoordinate> for PolarCoordinate {
+    fn from(item: I2DCoordinate) -> Self {
+        let x = item.x as f64;
+        let y = item.y as f64;
+        let r = (x.powi(2) + y.powi(2)).sqrt();
+        let theta: f64 = (y / x).atan();
+        Self { r, theta }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use approx::assert_relative_eq;
     use pretty_assertions::{assert_eq, assert_ne};
 
     const ABOVE_F64_EPSILON: f64 = 0.0000000000000002220446049250314;
@@ -185,19 +277,28 @@ mod tests {
         assert_eq!(coord1.into_f2dcoord(), coord2);
     }
 
+    #[test]
+    fn i2dcoordinate_from_into_trait_cast_polarcoordinate() {
+        let coord1 = PolarCoordinate::new(14.142135623730951, 0.7853981633974483);
+        assert_eq!(I2DCoordinate::from(coord1).x, 10_i64);
+        assert_eq!(I2DCoordinate::from(coord1).y, 10_i64);
+        let coord2 = I2DCoordinate::new(10, 10);
+        assert!(coord2.into_polarcoord() == coord1);
+    }
+
     // F2DCoordinate
     #[test]
     fn f2dcoordinate_default() {
         let coord = F2DCoordinate::default();
-        assert_eq!(coord.x, 0.0);
-        assert_eq!(coord.y, 0.0);
+        assert_relative_eq!(coord.x, 0.0);
+        assert_relative_eq!(coord.y, 0.0);
     }
 
     #[test]
     fn f2dcoordinate_new() {
         let coord = F2DCoordinate::new(1.01, 2.03);
-        assert_eq!(coord.x, 1.01);
-        assert_eq!(coord.y, 2.03);
+        assert_relative_eq!(coord.x, 1.01);
+        assert_relative_eq!(coord.y, 2.03);
     }
 
     #[test]
@@ -287,5 +388,108 @@ mod tests {
         // the cast uses f64.round() as i64
         assert_eq!(I2DCoordinate::from(coord3), coord1);
         assert_eq!(coord3.into_i2dcoord(), coord1);
+    }
+
+    #[test]
+    fn f2dcoordinate_from_into_trait_cast_polarcoordinate() {
+        let coord1 = PolarCoordinate::new(14.142135623730951, 0.7853981633974483);
+        assert_relative_eq!(F2DCoordinate::from(coord1).x, 10.0);
+        assert_relative_eq!(F2DCoordinate::from(coord1).y, 10.0);
+        let coord2 = F2DCoordinate::new(10.0, 10.0);
+        assert_eq!(coord2.into_polarcoord(), coord1);
+    }
+
+    // PolarCoordinate
+    #[test]
+    fn polarcoordinate_default() {
+        let coord = PolarCoordinate::default();
+        assert_relative_eq!(coord.r, 0.0);
+        assert_relative_eq!(coord.theta, 0.0);
+    }
+
+    #[test]
+    fn polarcoordinate_new() {
+        let coord = PolarCoordinate::new(2.0, 0.7853981633974483);
+        assert_relative_eq!(coord.r, 2.0);
+        assert_relative_eq!(coord.theta, 0.7853981633974483);
+    }
+
+    #[test]
+    fn polarcoordinate_display_trait() {
+        let coord = PolarCoordinate::new(1.01, 1.01);
+        assert_eq!(format!("{}", coord), "(1.01, 1.01)");
+    }
+
+    #[test]
+    fn polarcoordinate_equality_zeroes() {
+        let coord1 = PolarCoordinate::new(0.0, 0.0);
+        let coord2 = PolarCoordinate::new(0.000, 0.000);
+        assert!(coord1 == coord2);
+    }
+
+    #[test]
+    fn polarcoordinate_equality() {
+        let coord1 = PolarCoordinate::new(1.0, 45.0);
+        let coord2 = PolarCoordinate::new(2.0 - 1.0, 90.0 - 45.0);
+        let coord3 = PolarCoordinate::new(1.0, 45.1);
+        let coord4 = PolarCoordinate::new(1.01, 45.0);
+        assert!(coord1 == coord2);
+        assert!(coord2 == coord1);
+        assert!(coord1 != coord3);
+        assert!(coord3 != coord1);
+        assert!(coord1 != coord4);
+        assert!(coord4 != coord1);
+        let r_exceed_epsilon = 1.0 + ABOVE_F64_EPSILON; // just above f64::EPSILON
+        let theta_exceed_epsilon = 45.0 + ABOVE_F64_EPSILON; // just above f64::EPSILON
+        let coord5 = PolarCoordinate::new(r_exceed_epsilon, theta_exceed_epsilon);
+        // coords are "the same" at locations significantly above / below
+        // "zero" even though the absolute difference is above the f64 epsilon value
+        assert!(coord1 == coord5);
+        assert!(coord5 == coord1);
+        let r_zero_exceed_epsilon = 0.0 + ABOVE_F64_EPSILON;
+        let theta_zero_exceed_epsilon = 0.0 + ABOVE_F64_EPSILON;
+        let coord6 = PolarCoordinate::new(r_zero_exceed_epsilon, theta_zero_exceed_epsilon);
+        let coord7 = PolarCoordinate::new(0.0, 0.0);
+        // coords with differences above epsilon are "different" at values near zero
+        // where the relative difference is magnified
+        assert!(coord6 != coord7);
+        assert!(coord7 != coord6);
+    }
+
+    #[test]
+    fn polarcoordinate_approx_equal() {
+        let coord1 = PolarCoordinate::new(-1.0, 1.0);
+        let coord2 = PolarCoordinate::new(-1.0, 1.0);
+        let coord3 = PolarCoordinate::new(-1.00000000000001, 1.0);
+        let coord4 = PolarCoordinate::new(0.0, 0.0);
+        let coord5 = PolarCoordinate::new(0.000, 0.000);
+        assert!(coord1.approx_eq(&coord2));
+        assert!(!coord1.approx_eq(&coord3));
+        assert!(!coord1.approx_eq(&coord4));
+        assert!(coord4.approx_eq(&coord5));
+    }
+
+    #[test]
+    fn polarcoordinate_degrees() {
+        let coord = PolarCoordinate::new(14.142135623730951, 0.7853981633974483);
+        assert_relative_eq!(coord.degrees(), 45.0);
+    }
+
+    #[test]
+    fn polarcoordinate_into_from_cast_i2dcoordinate() {
+        let coord1 = I2DCoordinate::new(10, 10);
+        assert_relative_eq!(PolarCoordinate::from(coord1).r, 14.142135623730951);
+        assert_relative_eq!(PolarCoordinate::from(coord1).theta, 0.7853981633974483);
+        let coord2 = PolarCoordinate::new(14.142135623730951, 0.7853981633974483);
+        assert_eq!(coord2.into_i2dcoord(), coord1);
+    }
+
+    #[test]
+    fn polarcoordinate_into_from_cast_f2dcoordinate() {
+        let coord1 = F2DCoordinate::new(10.0, 10.0);
+        assert_relative_eq!(PolarCoordinate::from(coord1).r, 14.142135623730951);
+        assert_relative_eq!(PolarCoordinate::from(coord1).theta, 0.7853981633974483);
+        let coord2 = PolarCoordinate::new(14.142135623730951, 0.7853981633974483);
+        assert_eq!(coord2.into_f2dcoord(), coord1);
     }
 }
