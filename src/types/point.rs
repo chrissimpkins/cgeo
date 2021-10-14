@@ -1,3 +1,5 @@
+use std::fmt;
+
 use super::coordinate::{
     CartesianCoordinateType, F2DCoordinate, I2DCoordinate, PolarCoordinate, PolarCoordinateType,
 };
@@ -10,6 +12,19 @@ pub enum PointType {
     BezierOffCurve,
     Other,
     NotSpecified,
+}
+
+impl fmt::Display for PointType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            PointType::Cartesian => write!(f, "Cartesian"),
+            PointType::Polar => write!(f, "Polar"),
+            PointType::BezierOnCurve => write!(f, "BezierOnCurve"),
+            PointType::BezierOffCurve => write!(f, "BezierOffCurve"),
+            PointType::Other => write!(f, "Other"),
+            PointType::NotSpecified => write!(f, "NotSpecified"),
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -102,6 +117,12 @@ mod tests {
     use approx::assert_relative_eq;
     #[allow(unused_imports)]
     use pretty_assertions::{assert_eq, assert_ne};
+
+    #[test]
+    fn pointtype_enum_display_trait() {
+        let pty = PointType::Cartesian;
+        assert_eq!(format!("{}", pty), "Cartesian");
+    }
 
     #[test]
     fn cartesianpoint_instantiation_new() {
