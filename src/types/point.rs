@@ -111,9 +111,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::coordinate::{
-        CartesianCoordValType, F2DCoordinate, I2DCoordinate, PolarCoordValType, PolarCoordinate,
-    };
+    use crate::types::coordinate::{CoordValType, F2DCoordinate, I2DCoordinate, PolarCoordinate};
     use approx::assert_relative_eq;
     #[allow(unused_imports)]
     use pretty_assertions::{assert_eq, assert_ne};
@@ -130,12 +128,12 @@ mod tests {
         let pt2 = CartesianPoint::new(F2DCoordinate::new(1.0, 2.0));
         assert_eq!(pt1.coord.x, 1);
         assert_eq!(pt1.coord.y, 2);
-        assert_eq!(pt1.coord.type_of(), CartesianCoordValType::I64);
+        assert_eq!(pt1.coord.type_of(), CoordValType::I64);
         assert_eq!(pt1.type_of(), PointType::Cartesian);
 
         assert_relative_eq!(pt2.coord.x, 1.0);
         assert_relative_eq!(pt2.coord.y, 2.0);
-        assert_eq!(pt2.coord.type_of(), CartesianCoordValType::F64);
+        assert_eq!(pt2.coord.type_of(), CoordValType::F64);
         assert_eq!(pt2.type_of(), PointType::Cartesian);
     }
 
@@ -145,12 +143,12 @@ mod tests {
         let pt2 = PointGen::cartesian_f64(1.0, 2.0);
         assert_eq!(pt1.coord.x, 1);
         assert_eq!(pt1.coord.y, 2);
-        assert_eq!(pt1.coord.type_of(), CartesianCoordValType::I64);
+        assert_eq!(pt1.coord.type_of(), CoordValType::I64);
         assert_eq!(pt1.type_of(), PointType::Cartesian);
 
         assert_relative_eq!(pt2.coord.x, 1.0);
         assert_relative_eq!(pt2.coord.y, 2.0);
-        assert_eq!(pt2.coord.type_of(), CartesianCoordValType::F64);
+        assert_eq!(pt2.coord.type_of(), CoordValType::F64);
         assert_eq!(pt2.type_of(), PointType::Cartesian);
     }
 
@@ -169,7 +167,6 @@ mod tests {
         let pt = PolarPoint::new(PolarCoordinate::new(14.142135623730951, 0.7853981633974483));
         assert_relative_eq!(pt.coord.r, 14.142135623730951);
         assert_relative_eq!(pt.coord.theta, 0.7853981633974483);
-        assert_eq!(pt.coord.type_of(), PolarCoordValType::Radians);
         assert_eq!(pt.type_of(), PointType::Polar);
     }
 
@@ -178,7 +175,6 @@ mod tests {
         let pt = PointGen::polar(14.142135623730951, 0.7853981633974483);
         assert_relative_eq!(pt.coord.r, 14.142135623730951);
         assert_relative_eq!(pt.coord.theta, 0.7853981633974483);
-        assert_eq!(pt.coord.type_of(), PolarCoordValType::Radians);
         assert_eq!(pt.type_of(), PointType::Polar);
     }
 

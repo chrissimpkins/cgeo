@@ -3,27 +3,19 @@ use std::fmt;
 use approx::relative_eq;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub enum CartesianCoordValType {
+pub enum CoordValType {
     I64,
     F64,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
-pub enum PolarCoordValType {
-    Radians,
-    Degrees,
-}
-
 pub trait CartesianCoordinateType {
     type CoordNumberType;
-    fn type_of(&self) -> CartesianCoordValType;
+    fn type_of(&self) -> CoordValType;
     fn get_x(&self) -> Self::CoordNumberType;
     fn get_y(&self) -> Self::CoordNumberType;
 }
+
 pub trait PolarCoordinateType {
-    fn type_of(&self) -> PolarCoordValType {
-        PolarCoordValType::Radians
-    }
     fn get_degrees(&self) -> f64;
     fn get_radians(&self) -> f64;
     fn get_radius(&self) -> f64;
@@ -37,8 +29,8 @@ pub struct I2DCoordinate {
 
 impl CartesianCoordinateType for I2DCoordinate {
     type CoordNumberType = i64;
-    fn type_of(&self) -> CartesianCoordValType {
-        CartesianCoordValType::I64
+    fn type_of(&self) -> CoordValType {
+        CoordValType::I64
     }
 
     fn get_x(&self) -> Self::CoordNumberType {
@@ -110,8 +102,8 @@ pub struct F2DCoordinate {
 impl CartesianCoordinateType for F2DCoordinate {
     type CoordNumberType = f64;
 
-    fn type_of(&self) -> CartesianCoordValType {
-        CartesianCoordValType::F64
+    fn type_of(&self) -> CoordValType {
+        CoordValType::F64
     }
 
     fn get_x(&self) -> Self::CoordNumberType {
@@ -275,7 +267,7 @@ mod tests {
         let coord = I2DCoordinate::default();
         assert_eq!(coord.x, 0);
         assert_eq!(coord.y, 0);
-        assert_eq!(coord.type_of(), CartesianCoordValType::I64);
+        assert_eq!(coord.type_of(), CoordValType::I64);
     }
 
     #[test]
@@ -283,7 +275,7 @@ mod tests {
         let coord = I2DCoordinate::new(2, 3);
         assert_eq!(coord.x, 2);
         assert_eq!(coord.y, 3);
-        assert_eq!(coord.type_of(), CartesianCoordValType::I64);
+        assert_eq!(coord.type_of(), CoordValType::I64);
     }
 
     #[test]
@@ -369,7 +361,7 @@ mod tests {
         let coord = F2DCoordinate::default();
         assert_relative_eq!(coord.x, 0.0);
         assert_relative_eq!(coord.y, 0.0);
-        assert_eq!(coord.type_of(), CartesianCoordValType::F64);
+        assert_eq!(coord.type_of(), CoordValType::F64);
     }
 
     #[test]
@@ -377,7 +369,7 @@ mod tests {
         let coord = F2DCoordinate::new(1.01, 2.03);
         assert_relative_eq!(coord.x, 1.01);
         assert_relative_eq!(coord.y, 2.03);
-        assert_eq!(coord.type_of(), CartesianCoordValType::F64);
+        assert_eq!(coord.type_of(), CoordValType::F64);
     }
 
     #[test]
@@ -491,7 +483,6 @@ mod tests {
         let coord = PolarCoordinate::default();
         assert_relative_eq!(coord.r, 0.0);
         assert_relative_eq!(coord.theta, 0.0);
-        assert_eq!(coord.type_of(), PolarCoordValType::Radians);
     }
 
     #[test]
@@ -499,7 +490,6 @@ mod tests {
         let coord = PolarCoordinate::new(2.0, 0.7853981633974483);
         assert_relative_eq!(coord.r, 2.0);
         assert_relative_eq!(coord.theta, 0.7853981633974483);
-        assert_eq!(coord.type_of(), PolarCoordValType::Radians);
     }
 
     #[test]
