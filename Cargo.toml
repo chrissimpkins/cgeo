@@ -6,7 +6,7 @@ license = "Apache-2.0"
 edition = "2018"
 keywords = ["geometry", "computational", "algorithm"]
 repository = "https://github.com/chrissimpkins/cgeo"
-description = "Computational geometry library"
+description = "A 2D computational geometry library"
 readme = "README.md"
 
 exclude = [
