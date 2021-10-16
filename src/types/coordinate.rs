@@ -44,7 +44,7 @@ impl CartesianCoordinateType for I2DCoordinate {
 
 impl Default for I2DCoordinate {
     fn default() -> Self {
-        Self::new(0, 0)
+        Self::origin()
     }
 }
 
@@ -67,6 +67,10 @@ impl PartialEq<F2DCoordinate> for I2DCoordinate {
 impl I2DCoordinate {
     pub fn new(x: i64, y: i64) -> Self {
         Self { x, y }
+    }
+
+    pub fn origin() -> Self {
+        Self { x: 0, y: 0 }
     }
 
     pub fn into_f2dcoord(self) -> F2DCoordinate {
@@ -117,7 +121,7 @@ impl CartesianCoordinateType for F2DCoordinate {
 
 impl Default for F2DCoordinate {
     fn default() -> Self {
-        Self::new(0.0, 0.0)
+        Self::origin()
     }
 }
 
@@ -146,6 +150,10 @@ impl PartialEq<I2DCoordinate> for F2DCoordinate {
 impl F2DCoordinate {
     pub fn new(x: f64, y: f64) -> Self {
         Self { x, y }
+    }
+
+    pub fn origin() -> Self {
+        Self { x: 0.0, y: 0.0 }
     }
 
     pub fn approx_eq(&self, f: &F2DCoordinate) -> bool {
