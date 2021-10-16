@@ -7,18 +7,30 @@ use super::coordinate::{F2DCoordinate, I2DCoordinate};
 // }
 
 /// A 2D vector struct with [`i64`] coordinates
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug)]
 pub struct Vector2DInt {
+    /// The vector start coordinates.
+    pub begin: I2DCoordinate,
+    /// The bound vector coordinates where a bound vector is defined as having
+    /// a start (0, 0) origin coordinate.
     pub coord: I2DCoordinate,
 }
 
 impl Vector2DInt {
     pub fn new(begin: (i64, i64), end: (i64, i64)) -> Self {
-        Self { coord: I2DCoordinate::new(end.0 - begin.0, end.1 - begin.1) }
+        Self {
+            begin: I2DCoordinate::new(begin.0, begin.1),
+            coord: I2DCoordinate::new(end.0 - begin.0, end.1 - begin.1),
+        }
     }
 
     pub fn new_bound(end: (i64, i64)) -> Self {
-        Self { coord: I2DCoordinate::new(end.0, end.1) }
+        Self { begin: I2DCoordinate::origin(), coord: I2DCoordinate::new(end.0, end.1) }
+    }
+
+    /// Euclidean vector magnitude.
+    pub fn magnitude(&self) -> f64 {
+        ((self.coord.x as f64).powi(2) + (self.coord.y as f64).powi(2)).sqrt()
     }
 }
 
@@ -27,7 +39,10 @@ impl Add for Vector2DInt {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
-        Self { coord: I2DCoordinate::new(self.coord.x + rhs.coord.x, self.coord.y + rhs.coord.y) }
+        Self {
+            begin: self.begin,
+            coord: I2DCoordinate::new(self.coord.x + rhs.coord.x, self.coord.y + rhs.coord.y),
+        }
     }
 }
 
@@ -36,7 +51,10 @@ impl Sub for Vector2DInt {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        Self { coord: I2DCoordinate::new(self.coord.x - rhs.coord.x, self.coord.y - rhs.coord.y) }
+        Self {
+            begin: self.begin,
+            coord: I2DCoordinate::new(self.coord.x - rhs.coord.x, self.coord.y - rhs.coord.y),
+        }
     }
 }
 
@@ -45,7 +63,7 @@ impl Neg for Vector2DInt {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
-        Self { coord: I2DCoordinate::new(-self.coord.x, -self.coord.y) }
+        Self { begin: self.begin, coord: I2DCoordinate::new(-self.coord.x, -self.coord.y) }
     }
 }
 
@@ -54,30 +72,55 @@ impl Mul<i64> for Vector2DInt {
     type Output = Self;
 
     fn mul(self, rhs: i64) -> Self::Output {
-        Self { coord: I2DCoordinate::new(rhs * self.coord.x, rhs * self.coord.y) }
+        Self {
+            begin: self.begin,
+            coord: I2DCoordinate::new(rhs * self.coord.x, rhs * self.coord.y),
+        }
+    }
+}
+
+/// Partial equivalence is defined based on vector distance and
+/// direction comparisons only.  Vectors with different begin and
+/// end coordinates are defined as equivalent when they have the same
+/// distance and direction.
+impl PartialEq for Vector2DInt {
+    fn eq(&self, other: &Vector2DInt) -> bool {
+        self.coord == other.coord
     }
 }
 
 /// [`Vector2DFloat`] to [`Vector2DInt`] type casts
 impl From<Vector2DFloat> for Vector2DInt {
     fn from(item: Vector2DFloat) -> Self {
-        Self { coord: I2DCoordinate::from(item.coord) }
+        Self { begin: I2DCoordinate::from(item.begin), coord: I2DCoordinate::from(item.coord) }
     }
 }
 
 /// A 2D vector struct with [`f64`] coordinates.
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug)]
 pub struct Vector2DFloat {
+    /// The vector start coordinates.
+    pub begin: F2DCoordinate,
+    /// The bound vector coordinates where a bound vector is defined as having
+    /// a start (0, 0) origin coordinate.
     pub coord: F2DCoordinate,
 }
 
 impl Vector2DFloat {
     pub fn new(begin: (f64, f64), end: (f64, f64)) -> Self {
-        Self { coord: F2DCoordinate::new(end.0 - begin.0, end.1 - begin.1) }
+        Self {
+            begin: F2DCoordinate::new(begin.0, begin.1),
+            coord: F2DCoordinate::new(end.0 - begin.0, end.1 - begin.1),
+        }
     }
 
     pub fn new_bound(end: (f64, f64)) -> Self {
-        Self { coord: F2DCoordinate::new(end.0, end.1) }
+        Self { begin: F2DCoordinate::origin(), coord: F2DCoordinate::new(end.0, end.1) }
+    }
+
+    /// Euclidean vector magnitude.
+    pub fn magnitude(&self) -> f64 {
+        ((self.coord.x).powi(2) + (self.coord.y).powi(2)).sqrt()
     }
 }
 
@@ -86,7 +129,10 @@ impl Add for Vector2DFloat {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
-        Self { coord: F2DCoordinate::new(self.coord.x + rhs.coord.x, self.coord.y + rhs.coord.y) }
+        Self {
+            begin: self.begin,
+            coord: F2DCoordinate::new(self.coord.x + rhs.coord.x, self.coord.y + rhs.coord.y),
+        }
     }
 }
 
@@ -95,7 +141,10 @@ impl Sub for Vector2DFloat {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        Self { coord: F2DCoordinate::new(self.coord.x - rhs.coord.x, self.coord.y - rhs.coord.y) }
+        Self {
+            begin: self.begin,
+            coord: F2DCoordinate::new(self.coord.x - rhs.coord.x, self.coord.y - rhs.coord.y),
+        }
     }
 }
 
@@ -104,7 +153,7 @@ impl Neg for Vector2DFloat {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
-        Self { coord: F2DCoordinate::new(-self.coord.x, -self.coord.y) }
+        Self { begin: self.begin, coord: F2DCoordinate::new(-self.coord.x, -self.coord.y) }
     }
 }
 
@@ -113,7 +162,10 @@ impl Mul<f64> for Vector2DFloat {
     type Output = Self;
 
     fn mul(self, rhs: f64) -> Self::Output {
-        Self { coord: F2DCoordinate::new(rhs * self.coord.x, rhs * self.coord.y) }
+        Self {
+            begin: self.begin,
+            coord: F2DCoordinate::new(rhs * self.coord.x, rhs * self.coord.y),
+        }
     }
 }
 
@@ -122,14 +174,27 @@ impl Mul<i64> for Vector2DFloat {
     type Output = Self;
 
     fn mul(self, rhs: i64) -> Self::Output {
-        Self { coord: F2DCoordinate::new(rhs as f64 * self.coord.x, rhs as f64 * self.coord.y) }
+        Self {
+            begin: self.begin,
+            coord: F2DCoordinate::new(rhs as f64 * self.coord.x, rhs as f64 * self.coord.y),
+        }
+    }
+}
+
+/// Partial equivalence is defined based on vector distance and
+/// direction comparisons only.  Vectors with different begin and
+/// end coordinates are defined as equivalent when they have the same
+/// distance and direction.
+impl PartialEq for Vector2DFloat {
+    fn eq(&self, other: &Vector2DFloat) -> bool {
+        self.coord == other.coord
     }
 }
 
 /// [`Vector2DInt`] to [`Vector2DFloat`] type casts
 impl From<Vector2DInt> for Vector2DFloat {
     fn from(item: Vector2DInt) -> Self {
-        Self { coord: F2DCoordinate::from(item.coord) }
+        Self { begin: F2DCoordinate::from(item.begin), coord: F2DCoordinate::from(item.coord) }
     }
 }
 
@@ -145,9 +210,26 @@ mod tests {
     fn vector2dint_instantiation() {
         let v = Vector2DInt::new((1, 2), (3, 4));
         assert_eq!(v.coord, I2DCoordinate::new(2, 2));
+        assert_eq!(v.begin, I2DCoordinate::new(1, 2));
 
         let v = Vector2DInt::new_bound((3, 4));
         assert_eq!(v.coord, I2DCoordinate::new(3, 4));
+    }
+
+    #[test]
+    fn vector2dint_magnitude() {
+        let v = Vector2DInt::new((1, 2), (3, 4));
+        assert_relative_eq!(v.magnitude(), 2.8284271247461903);
+    }
+
+    #[test]
+    fn vector2dint_partialeq() {
+        let v1 = Vector2DInt::new((1, 2), (2, 3));
+        let v2 = Vector2DInt::new((2, 3), (3, 4));
+        let v3 = Vector2DInt::new_bound((10, 10));
+        assert_eq!(v1.coord, v2.coord);
+        assert_eq!(v1, v2);
+        assert_ne!(v1, v3);
     }
 
     #[test]
@@ -225,6 +307,22 @@ mod tests {
 
         let v = Vector2DFloat::new_bound((3.123, 4.321));
         assert_eq!(v.coord, F2DCoordinate::new(3.123, 4.321));
+    }
+
+    #[test]
+    fn vector2dfloat_length() {
+        let v = Vector2DFloat::new((1.1, 2.1), (3.9, 4.7));
+        assert_relative_eq!(v.magnitude(), 3.82099463490856);
+    }
+
+    #[test]
+    fn vector2dfloat_partialeq() {
+        let v1 = Vector2DFloat::new((1.0, 2.0), (2.0, 3.0));
+        let v2 = Vector2DFloat::new((2.0, 3.0), (3.0, 4.0));
+        let v3 = Vector2DFloat::new_bound((10.0, 10.0));
+        assert_eq!(v1.coord, v2.coord);
+        assert_eq!(v1, v2);
+        assert_ne!(v1, v3);
     }
 
     #[test]
