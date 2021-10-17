@@ -133,7 +133,9 @@ impl Vector2DFloat {
 
     /// Euclidean vector magnitude.
     pub fn magnitude(&self) -> f64 {
-        // uses the dot product approach for performance
+        // uses the dot product approach - consistent with i64 approach
+        // but does not appear to confer the same performance benefits in
+        // benchmark testing
         (self.dot_product(self)).sqrt()
     }
 
@@ -269,7 +271,9 @@ mod tests {
         let v1 = Vector2DInt::new_bound((1, 2));
         let v2 = Vector2DInt::new_bound((3, 4));
         let v3 = Vector2DInt::new_bound((5, 6));
+        let v4 = Vector2DInt::new_bound((-3, -4));
         assert_eq!(v1.dot_product(&v2), 11);
+        assert_eq!(v1.dot_product(&v4), -11);
         assert_eq!(-v1.dot_product(&-v2), 11);
         assert_eq!(v1.dot_product(&v2), v2.dot_product(&v1));
         let x1 = v1 * 3;
