@@ -30,7 +30,8 @@ impl Vector2DInt {
 
     /// Euclidean vector magnitude.
     pub fn magnitude(&self) -> f64 {
-        ((self.coord.x as f64).powi(2) + (self.coord.y as f64).powi(2)).sqrt()
+        // uses the dot product approach for performance
+        (self.dot_product(self) as f64).sqrt()
     }
 
     pub fn begin(&self) -> &I2DCoordinate {
@@ -41,7 +42,7 @@ impl Vector2DInt {
         I2DCoordinate::new(self.coord.x + self.begin.x, self.coord.y + self.begin.y)
     }
 
-    pub fn dot_product(&self, other: Vector2DInt) -> i64 {
+    pub fn dot_product(&self, other: &Vector2DInt) -> i64 {
         (self.coord.x * other.coord.x) + (self.coord.y * other.coord.y)
     }
 }
@@ -132,7 +133,8 @@ impl Vector2DFloat {
 
     /// Euclidean vector magnitude.
     pub fn magnitude(&self) -> f64 {
-        ((self.coord.x).powi(2) + (self.coord.y).powi(2)).sqrt()
+        // uses the dot product approach for performance
+        (self.dot_product(self)).sqrt()
     }
 
     pub fn begin(&self) -> &F2DCoordinate {
@@ -143,7 +145,7 @@ impl Vector2DFloat {
         F2DCoordinate::new(self.coord.x + self.begin.x, self.coord.y + self.begin.y)
     }
 
-    pub fn dot_product(&self, other: Vector2DFloat) -> f64 {
+    pub fn dot_product(&self, other: &Vector2DFloat) -> f64 {
         (self.coord.x * other.coord.x) + (self.coord.y * other.coord.y)
     }
 }
@@ -266,8 +268,12 @@ mod tests {
     fn vector2dint_dot_product() {
         let v1 = Vector2DInt::new_bound((1, 2));
         let v2 = Vector2DInt::new_bound((3, 4));
-        assert_eq!(v1.dot_product(v2), 11);
-        assert_eq!(-v1.dot_product(-v2), 11);
+        assert_eq!(v1.dot_product(&v2), 11);
+        assert_eq!(-v1.dot_product(&-v2), 11);
+        assert_eq!(v1.dot_product(&v2), v2.dot_product(&v1));
+        let x1 = v1 * 3;
+        let x2 = v2 * 6;
+        assert_eq!(x1.dot_product(&x2), ((3 * 6) * v1.dot_product(&v2)));
     }
 
     #[test]
@@ -452,8 +458,8 @@ mod tests {
     fn vector2dfloat_dot_product() {
         let v1 = Vector2DFloat::new_bound((1.0, 2.0));
         let v2 = Vector2DFloat::new_bound((3.0, 4.0));
-        assert_relative_eq!(v1.dot_product(v2), 11.0);
-        assert_relative_eq!(-v1.dot_product(-v2), 11.0);
+        assert_relative_eq!(v1.dot_product(&v2), 11.0);
+        assert_relative_eq!(-v1.dot_product(&-v2), 11.0);
     }
 
     #[test]
