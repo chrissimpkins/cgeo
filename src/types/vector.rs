@@ -268,12 +268,14 @@ mod tests {
     fn vector2dint_dot_product() {
         let v1 = Vector2DInt::new_bound((1, 2));
         let v2 = Vector2DInt::new_bound((3, 4));
+        let v3 = Vector2DInt::new_bound((5, 6));
         assert_eq!(v1.dot_product(&v2), 11);
         assert_eq!(-v1.dot_product(&-v2), 11);
         assert_eq!(v1.dot_product(&v2), v2.dot_product(&v1));
         let x1 = v1 * 3;
         let x2 = v2 * 6;
         assert_eq!(x1.dot_product(&x2), ((3 * 6) * v1.dot_product(&v2)));
+        assert_eq!(v1.dot_product(&(v2 + v3)), v1.dot_product(&v2) + v1.dot_product(&v3));
     }
 
     #[test]
@@ -458,8 +460,14 @@ mod tests {
     fn vector2dfloat_dot_product() {
         let v1 = Vector2DFloat::new_bound((1.0, 2.0));
         let v2 = Vector2DFloat::new_bound((3.0, 4.0));
+        let v3 = Vector2DFloat::new_bound((5.0, 6.0));
         assert_relative_eq!(v1.dot_product(&v2), 11.0);
         assert_relative_eq!(-v1.dot_product(&-v2), 11.0);
+        assert_relative_eq!(v1.dot_product(&v2), v2.dot_product(&v1));
+        let x1 = v1 * 3.1;
+        let x2 = v2 * 6.1;
+        assert_relative_eq!(x1.dot_product(&x2), ((3.1 * 6.1) * v1.dot_product(&v2)));
+        assert_relative_eq!(v1.dot_product(&(v2 + v3)), v1.dot_product(&v2) + v1.dot_product(&v3));
     }
 
     #[test]
