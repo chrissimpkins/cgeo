@@ -28,6 +28,10 @@ impl Vector2DInt {
         Self { begin: I2DCoordinate::origin(), coord: I2DCoordinate::new(end.0, end.1) }
     }
 
+    pub fn zero() -> Self {
+        Self::new_bound((0, 0))
+    }
+
     /// Euclidean vector magnitude.
     pub fn magnitude(&self) -> f64 {
         // uses the dot product approach for performance
@@ -129,6 +133,10 @@ impl Vector2DFloat {
 
     pub fn new_bound(end: (f64, f64)) -> Self {
         Self { begin: F2DCoordinate::origin(), coord: F2DCoordinate::new(end.0, end.1) }
+    }
+
+    pub fn zero() -> Self {
+        Self::new_bound((0.0, 0.0))
     }
 
     /// Euclidean vector magnitude.
@@ -242,6 +250,10 @@ mod tests {
 
         let v = Vector2DInt::new_bound((3, 4));
         assert_eq!(v.coord, I2DCoordinate::new(3, 4));
+
+        let v = Vector2DInt::zero();
+        assert_eq!(v.coord, I2DCoordinate::new(0, 0));
+        assert_eq!(v.begin, I2DCoordinate::new(0, 0));
     }
 
     #[test]
@@ -438,6 +450,10 @@ mod tests {
 
         let v = Vector2DFloat::new_bound((3.123, 4.321));
         assert_eq!(v.coord, F2DCoordinate::new(3.123, 4.321));
+
+        let v = Vector2DInt::zero();
+        assert_eq!(v.coord, F2DCoordinate::new(0.0, 0.0));
+        assert_eq!(v.begin, F2DCoordinate::new(0.0, 0.0));
     }
 
     #[test]
