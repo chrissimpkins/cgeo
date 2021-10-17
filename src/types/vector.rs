@@ -32,6 +32,14 @@ impl Vector2DInt {
     pub fn magnitude(&self) -> f64 {
         ((self.coord.x as f64).powi(2) + (self.coord.y as f64).powi(2)).sqrt()
     }
+
+    pub fn begin(&self) -> &I2DCoordinate {
+        &self.begin
+    }
+
+    pub fn end(&self) -> I2DCoordinate {
+        I2DCoordinate::new(self.coord.x + self.begin.x, self.coord.y + self.begin.y)
+    }
 }
 
 /// [`Vector2DInt`] addition with the `+` operator
@@ -82,7 +90,7 @@ impl Mul<i64> for Vector2DInt {
 /// Partial equivalence is defined based on vector magnitude and
 /// direction comparisons only.  Vectors with different begin and
 /// end coordinates are defined as equivalent when they have the same
-/// magnitude and direction.
+/// magnitude and direction but different locations in coordinate space.
 impl PartialEq for Vector2DInt {
     fn eq(&self, other: &Vector2DInt) -> bool {
         self.coord == other.coord
@@ -121,6 +129,14 @@ impl Vector2DFloat {
     /// Euclidean vector magnitude.
     pub fn magnitude(&self) -> f64 {
         ((self.coord.x).powi(2) + (self.coord.y).powi(2)).sqrt()
+    }
+
+    pub fn begin(&self) -> &F2DCoordinate {
+        &self.begin
+    }
+
+    pub fn end(&self) -> F2DCoordinate {
+        F2DCoordinate::new(self.coord.x + self.begin.x, self.coord.y + self.begin.y)
     }
 }
 
@@ -184,7 +200,7 @@ impl Mul<i64> for Vector2DFloat {
 /// Partial equivalence is defined based on vector magnitude and
 /// direction comparisons only.  Vectors with different begin and
 /// end coordinates are defined as equivalent when they have the same
-/// magnitude and direction.
+/// magnitude and direction but different locations in coordinate space.
 impl PartialEq for Vector2DFloat {
     fn eq(&self, other: &Vector2DFloat) -> bool {
         self.coord == other.coord
@@ -225,6 +241,20 @@ mod tests {
     }
 
     #[test]
+    fn vector2dint_begin() {
+        let v = Vector2DInt::new((1, 2), (3, 4));
+        assert_eq!(v.begin().x, 1);
+        assert_eq!(v.begin().y, 2);
+    }
+
+    #[test]
+    fn vector2dint_end() {
+        let v = Vector2DInt::new((1, 2), (3, 4));
+        assert_eq!(v.end().x, 3);
+        assert_eq!(v.end().y, 4);
+    }
+
+    #[test]
     fn vector2dint_partialeq() {
         let v1 = Vector2DInt::new((1, 2), (2, 3));
         let v2 = Vector2DInt::new((2, 3), (3, 4));
@@ -233,6 +263,7 @@ mod tests {
         // comparison only
         assert_eq!(v1.coord, v2.coord);
         assert_ne!(v1.begin, v2.begin);
+        assert_ne!(v1.end(), v2.end());
         assert_eq!(v1, v2);
         assert_ne!(v1, v3);
     }
@@ -262,8 +293,10 @@ mod tests {
         let v5_v4 = v5 + v4;
         assert_eq!(v4.begin, v4_v5.begin);
         assert_ne!(v5.begin, v4_v5.begin);
+        assert_ne!(v4.end(), v4_v5.end());
         assert_eq!(v5.begin, v5_v4.begin);
         assert_ne!(v4.begin, v5_v4.begin);
+        assert_ne!(v5.end(), v5_v4.end());
         assert_eq!(v4_v5, v5_v4);
     }
 
@@ -292,8 +325,10 @@ mod tests {
         let v5_v4 = v5 - v4;
         assert_eq!(v4.begin, v4_v5.begin);
         assert_ne!(v5.begin, v4_v5.begin);
+        assert_ne!(v4.end(), v4_v5.end());
         assert_eq!(v5.begin, v5_v4.begin);
         assert_ne!(v4.begin, v5_v4.begin);
+        assert_ne!(v5.end(), v5_v4.end());
         assert_eq!(v4_v5, v5_v4);
     }
 
@@ -314,6 +349,7 @@ mod tests {
         let v3 = Vector2DInt::new((1, 2), (3, 4));
         let v3_2 = v3 * 2;
         assert_eq!(v3_2.begin, v3.begin);
+        assert_ne!(v3_2.end(), v3.end());
     }
 
     #[test]
@@ -342,8 +378,9 @@ mod tests {
         let x3 = Vector2DInt::from(vf6);
         assert_eq!(x2, vi5);
         assert_eq!(x3, vi6);
-        // begin coordinates differ due to f64 coordinate rounding
+        // begin/end coordinates differ due to f64 coordinate rounding
         assert_ne!(x2.begin, x3.begin);
+        assert_ne!(x2.end(), x3.end());
         // but vectors are considered equivalent with equal
         // magnitude and direction
         assert_eq!(x2, x3);
@@ -360,9 +397,23 @@ mod tests {
     }
 
     #[test]
-    fn vector2dfloat_length() {
+    fn vector2dfloat_magnitude() {
         let v = Vector2DFloat::new((1.1, 2.1), (3.9, 4.7));
         assert_relative_eq!(v.magnitude(), 3.82099463490856);
+    }
+
+    #[test]
+    fn vector2float_begin() {
+        let v = Vector2DFloat::new((1.0, 2.0), (3.0, 4.0));
+        assert_relative_eq!(v.begin().x, 1.0);
+        assert_relative_eq!(v.begin().y, 2.0);
+    }
+
+    #[test]
+    fn vector2dfloat_end() {
+        let v = Vector2DFloat::new((1.0, 2.0), (3.0, 4.0));
+        assert_relative_eq!(v.end().x, 3.0);
+        assert_relative_eq!(v.end().y, 4.0);
     }
 
     #[test]
@@ -373,6 +424,7 @@ mod tests {
         // equivalence defined on magnitude and direction comparison only
         assert_eq!(v1.coord, v2.coord);
         assert_ne!(v1.begin, v2.begin);
+        assert_ne!(v1.end(), v2.end());
         assert_eq!(v1, v2);
         assert_ne!(v1, v3);
     }
@@ -402,8 +454,10 @@ mod tests {
         let v5_v4 = v5 + v4;
         assert_eq!(v4.begin, v4_v5.begin);
         assert_ne!(v5.begin, v4_v5.begin);
+        assert_ne!(v4.end(), v4_v5.end());
         assert_eq!(v5.begin, v5_v4.begin);
         assert_ne!(v4.begin, v5_v4.begin);
+        assert_ne!(v5.end(), v5_v4.end());
         assert_eq!(v4_v5, v5_v4);
     }
 
@@ -436,8 +490,10 @@ mod tests {
         let v5_v4 = v5 - v4;
         assert_eq!(v4.begin, v4_v5.begin);
         assert_ne!(v5.begin, v4_v5.begin);
+        assert_ne!(v4.end(), v4_v5.end());
         assert_eq!(v5.begin, v5_v4.begin);
         assert_ne!(v4.begin, v5_v4.begin);
+        assert_ne!(v5.end(), v5_v4.end());
     }
 
     #[test]
@@ -456,6 +512,8 @@ mod tests {
         let v3 = Vector2DFloat::new((1.0, 2.0), (3.0, 4.0));
         let v3_2 = v3 * 2.0_f64;
         assert_eq!(v3_2.begin, v3.begin);
+        assert_ne!(v3_2.end(), v3.end());
+        assert_ne!(v3_2, v3);
     }
 
     #[test]
@@ -477,6 +535,8 @@ mod tests {
         let v3 = Vector2DFloat::new((1.0, 2.0), (3.0, 4.0));
         let v3_2 = v3 * 2_i64;
         assert_eq!(v3_2.begin, v3.begin);
+        assert_ne!(v3_2.end(), v3.end());
+        assert_ne!(v3_2, v3);
     }
 
     #[test]
@@ -505,5 +565,7 @@ mod tests {
         assert_eq!(x2, vf5);
         assert_relative_eq!(x2.begin.x, 1.0);
         assert_relative_eq!(x2.begin.y, 2.0);
+        assert_relative_eq!(x2.end().x, 3.0);
+        assert_relative_eq!(x2.end().y, 4.0);
     }
 }
