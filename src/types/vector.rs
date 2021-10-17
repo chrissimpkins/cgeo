@@ -71,7 +71,7 @@ impl Neg for Vector2DInt {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
-        Self { begin: self.begin, coord: I2DCoordinate::new(-self.coord.x, -self.coord.y) }
+        Self::new((self.end().x, self.end().y), (self.begin().x, self.begin().y))
     }
 }
 
@@ -169,7 +169,7 @@ impl Neg for Vector2DFloat {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
-        Self { begin: self.begin, coord: F2DCoordinate::new(-self.coord.x, -self.coord.y) }
+        Self::new((self.end().x, self.end().y), (self.begin().x, self.begin().y))
     }
 }
 
@@ -266,6 +266,22 @@ mod tests {
         assert_ne!(v1.end(), v2.end());
         assert_eq!(v1, v2);
         assert_ne!(v1, v3);
+    }
+
+    #[test]
+    fn vector2dint_unary_neg_operator() {
+        let v1 = Vector2DInt::new((1, 2), (3, 4));
+        let v2 = Vector2DInt::new((3, 4), (1, 2));
+        let v3 = Vector2DInt::new((-1, -2), (-3, -4));
+        let v4 = Vector2DInt::new((-3, -4), (-1, -2));
+        assert_eq!(v1.coord.x, 2);
+        assert_eq!(v1.coord.y, 2);
+        assert_eq!(-v1.coord.x, -2);
+        assert_eq!(-v1.coord.y, -2);
+        assert_eq!(-v1, -v1);
+        assert_eq!(-v1, v2);
+        assert_eq!(-v3, -v3);
+        assert_eq!(-v3, v4);
     }
 
     #[test]
@@ -427,6 +443,22 @@ mod tests {
         assert_ne!(v1.end(), v2.end());
         assert_eq!(v1, v2);
         assert_ne!(v1, v3);
+    }
+
+    #[test]
+    fn vector2dfloat_unary_neg_operator() {
+        let v1 = Vector2DFloat::new((1.0, 2.0), (3.0, 4.0));
+        let v2 = Vector2DFloat::new((3.0, 4.0), (1.0, 2.0));
+        let v3 = Vector2DFloat::new((-1.0, -2.0), (-3.0, -4.0));
+        let v4 = Vector2DFloat::new((-3.0, -4.0), (-1.0, -2.0));
+        assert_relative_eq!(v1.coord.x, 2.0);
+        assert_relative_eq!(v1.coord.y, 2.0);
+        assert_relative_eq!(-v1.coord.x, -2.0);
+        assert_relative_eq!(-v1.coord.y, -2.0);
+        assert_eq!(-v1, -v1);
+        assert_eq!(-v1, v2);
+        assert_eq!(-v3, -v3);
+        assert_eq!(-v3, v4);
     }
 
     #[test]
