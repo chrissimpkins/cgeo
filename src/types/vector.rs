@@ -40,6 +40,10 @@ impl Vector2DInt {
     pub fn end(&self) -> I2DCoordinate {
         I2DCoordinate::new(self.coord.x + self.begin.x, self.coord.y + self.begin.y)
     }
+
+    pub fn dot_product(&self, other: Vector2DInt) -> i64 {
+        (self.coord.x * other.coord.x) + (self.coord.y * other.coord.y)
+    }
 }
 
 /// [`Vector2DInt`] addition with the `+` operator
@@ -137,6 +141,10 @@ impl Vector2DFloat {
 
     pub fn end(&self) -> F2DCoordinate {
         F2DCoordinate::new(self.coord.x + self.begin.x, self.coord.y + self.begin.y)
+    }
+
+    pub fn dot_product(&self, other: Vector2DFloat) -> f64 {
+        (self.coord.x * other.coord.x) + (self.coord.y * other.coord.y)
     }
 }
 
@@ -252,6 +260,14 @@ mod tests {
         let v = Vector2DInt::new((1, 2), (3, 4));
         assert_eq!(v.end().x, 3);
         assert_eq!(v.end().y, 4);
+    }
+
+    #[test]
+    fn vector2dint_dot_product() {
+        let v1 = Vector2DInt::new_bound((1, 2));
+        let v2 = Vector2DInt::new_bound((3, 4));
+        assert_eq!(v1.dot_product(v2), 11);
+        assert_eq!(-v1.dot_product(-v2), 11);
     }
 
     #[test]
@@ -430,6 +446,14 @@ mod tests {
         let v = Vector2DFloat::new((1.0, 2.0), (3.0, 4.0));
         assert_relative_eq!(v.end().x, 3.0);
         assert_relative_eq!(v.end().y, 4.0);
+    }
+
+    #[test]
+    fn vector2dfloat_dot_product() {
+        let v1 = Vector2DFloat::new_bound((1.0, 2.0));
+        let v2 = Vector2DFloat::new_bound((3.0, 4.0));
+        assert_relative_eq!(v1.dot_product(v2), 11.0);
+        assert_relative_eq!(-v1.dot_product(-v2), 11.0);
     }
 
     #[test]
