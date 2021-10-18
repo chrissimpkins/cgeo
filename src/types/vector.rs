@@ -78,6 +78,16 @@ impl Vector2DInt {
     pub fn angle(&self, other: &Vector2DInt) -> f64 {
         self.normalize().dot_product(&other.normalize()).acos()
     }
+
+    /// Returns the counter-clockwise normal vector of a [`Vector2DInt`].  This has
+    /// a magnitude that is equivalent to the original [`Vector2DInt`] and a coordinate
+    /// offset that is 90 degrees in the counter-clockwise direction.
+    pub fn ccw_normal(&self) -> Self {
+        Self {
+            begin: I2DCoordinate::new(-self.begin.y, self.begin.x),
+            coord: I2DCoordinate::new(-self.coord.y, self.coord.x),
+        }
+    }
 }
 
 /// [`Vector2DInt`] addition with the `+` operator
@@ -211,6 +221,16 @@ impl Vector2DFloat {
     /// Calculate the angle between two [`Vector2DFloat`] in radians.
     pub fn angle(&self, other: &Vector2DFloat) -> f64 {
         self.normalize().dot_product(&other.normalize()).acos()
+    }
+
+    /// Returns the counter-clockwise normal vector of a [`Vector2DFloat`].  This has
+    /// a magnitude that is equivalent to the original [`Vector2DFloat`] and a coordinate
+    /// offset that is 90 degrees in the counter-clockwise direction.
+    pub fn ccw_normal(&self) -> Self {
+        Self {
+            begin: F2DCoordinate::new(-self.begin.y, self.begin.x),
+            coord: F2DCoordinate::new(-self.coord.y, self.coord.x),
+        }
     }
 }
 
@@ -540,6 +560,42 @@ mod tests {
     }
 
     #[test]
+    fn vector2dint_ccw_normal() {
+        let v1 = Vector2DInt::new_bound((10, 0));
+        let v2 = Vector2DInt::new_bound((0, 10));
+        let v3 = Vector2DInt::new_bound((1, 25));
+        let v4 = Vector2DInt::new_bound((-25, 1));
+        let v5 = Vector2DInt::new((-1, -2), (4, 5));
+        let v6 = Vector2DInt::new((2, -1), (-5, 4));
+        assert_eq!(v1.ccw_normal(), v2);
+        assert_relative_eq!(v1.ccw_normal().angle(&v1).to_degrees(), 90.0);
+        // preserves magnitude
+        assert_relative_eq!(v1.ccw_normal().magnitude(), v1.magnitude());
+        // dot product is zero
+        assert_eq!(v1.ccw_normal().dot_product(&v1), 0);
+        // scalar association
+        assert_eq!((v1 * 6).ccw_normal(), v1.ccw_normal() * 6);
+        // linear
+        assert_eq!((v1 * 6 + v1 * 8).ccw_normal(), (v1 * 6).ccw_normal() + (v1 * 8).ccw_normal());
+        // anti-potent
+        assert_eq!(v1.ccw_normal().ccw_normal(), -v1);
+
+        assert_eq!(v3.ccw_normal(), v4);
+        assert_relative_eq!(v3.ccw_normal().angle(&v3).to_degrees(), 90.0);
+        assert_relative_eq!(v3.ccw_normal().magnitude(), v3.magnitude());
+        assert_relative_eq!(v5.magnitude(), v6.magnitude());
+
+        assert_eq!(v5.ccw_normal(), v6);
+        assert_relative_eq!(v5.ccw_normal().angle(&v5).to_degrees(), 90.0);
+        assert_relative_eq!(v5.ccw_normal().magnitude(), v5.magnitude());
+        // tests of begin and end coordinate locations in the ccw normal
+        assert_eq!(v5.ccw_normal().begin.x, 2);
+        assert_eq!(v5.ccw_normal().begin.y, -1);
+        assert_eq!(v5.ccw_normal().end().x, -5);
+        assert_eq!(v5.ccw_normal().end().y, 4);
+    }
+
+    #[test]
     fn vector2dfloat_instantiation() {
         let v = Vector2DFloat::new((1.0, 2.0), (3.123, 4.321));
         assert_eq!(v.coord, F2DCoordinate::new(2.123, 2.321));
@@ -797,5 +853,40 @@ mod tests {
         assert!(v2.angle(&v3).is_sign_positive());
         assert_relative_eq!(v2.angle(&v4).to_degrees(), 90.0);
         assert!(v2.angle(&v4).is_sign_positive());
+    }
+
+    #[test]
+    fn vector2dfloat_ccw_normal() {
+        let v1 = Vector2DFloat::new_bound((10.0, 0.0));
+        let v2 = Vector2DFloat::new_bound((0.0, 10.0));
+        let v3 = Vector2DFloat::new_bound((1.0, 25.0));
+        let v4 = Vector2DFloat::new_bound((-25.0, 1.0));
+        let v5 = Vector2DFloat::new((-1.0, -2.0), (4.0, 5.0));
+        let v6 = Vector2DFloat::new((2.0, -1.0), (-5.0, 4.0));
+        assert_eq!(v1.ccw_normal(), v2);
+        assert_relative_eq!(v1.ccw_normal().angle(&v1).to_degrees(), 90.0);
+        // preserves magnitude
+        assert_relative_eq!(v1.ccw_normal().magnitude(), v1.magnitude());
+        // dot product is zero
+        assert_relative_eq!(v1.ccw_normal().dot_product(&v1), 0.0);
+        // scalar association
+        assert_eq!((v1 * 6.0).ccw_normal(), v1.ccw_normal() * 6.0);
+        // linear
+        assert_eq!((v1 * 6 + v1 * 8).ccw_normal(), (v1 * 6).ccw_normal() + (v1 * 8).ccw_normal());
+        // anti-potent
+        assert_eq!(v1.ccw_normal().ccw_normal(), -v1);
+
+        assert_eq!(v3.ccw_normal(), v4);
+        assert_relative_eq!(v3.ccw_normal().angle(&v3).to_degrees(), 90.0);
+        assert_relative_eq!(v3.ccw_normal().magnitude(), v3.magnitude());
+        assert_relative_eq!(v5.magnitude(), v6.magnitude());
+
+        assert_eq!(v5.ccw_normal(), v6);
+        assert_relative_eq!(v5.ccw_normal().angle(&v5).to_degrees(), 90.0);
+        assert_relative_eq!(v5.ccw_normal().magnitude(), v5.magnitude());
+        assert_relative_eq!(v5.ccw_normal().begin.x, 2.0);
+        assert_relative_eq!(v5.ccw_normal().begin.y, -1.0);
+        assert_relative_eq!(v5.ccw_normal().end().x, -5.0);
+        assert_relative_eq!(v5.ccw_normal().end().y, 4.0);
     }
 }
