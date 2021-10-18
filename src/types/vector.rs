@@ -79,6 +79,16 @@ impl Vector2DInt {
         self.normalize().dot_product(&other.normalize()).acos()
     }
 
+    /// Returns the clockwise normal vector of a [`Vector2DInt`].  This has
+    /// a magnitude that is equivalent to the original [`Vector2DInt`] and a coordinate
+    /// offset that is 90 degrees in the clockwise direction.
+    pub fn cw_normal(&self) -> Self {
+        Self {
+            begin: I2DCoordinate::new(self.begin.y, -self.begin.x),
+            coord: I2DCoordinate::new(self.coord.y, -self.coord.x),
+        }
+    }
+
     /// Returns the counter-clockwise normal vector of a [`Vector2DInt`].  This has
     /// a magnitude that is equivalent to the original [`Vector2DInt`] and a coordinate
     /// offset that is 90 degrees in the counter-clockwise direction.
@@ -221,6 +231,16 @@ impl Vector2DFloat {
     /// Calculate the angle between two [`Vector2DFloat`] in radians.
     pub fn angle(&self, other: &Vector2DFloat) -> f64 {
         self.normalize().dot_product(&other.normalize()).acos()
+    }
+
+    /// Returns the clockwise normal vector of a [`Vector2DFloat`].  This has
+    /// a magnitude that is equivalent to the original [`Vector2DFloat`] and a coordinate
+    /// offset that is 90 degrees in the clockwise direction.
+    pub fn cw_normal(&self) -> Self {
+        Self {
+            begin: F2DCoordinate::new(self.begin.y, -self.begin.x),
+            coord: F2DCoordinate::new(self.coord.y, -self.coord.x),
+        }
     }
 
     /// Returns the counter-clockwise normal vector of a [`Vector2DFloat`].  This has
@@ -593,6 +613,43 @@ mod tests {
         assert_eq!(v5.ccw_normal().begin.y, -1);
         assert_eq!(v5.ccw_normal().end().x, -5);
         assert_eq!(v5.ccw_normal().end().y, 4);
+    }
+
+    #[test]
+    fn vector2dint_cw_normal() {
+        let v1 = Vector2DInt::new_bound((0, 10));
+        let v2 = Vector2DInt::new_bound((10, 0));
+        let v3 = Vector2DInt::new_bound((-25, 1));
+        let v4 = Vector2DInt::new_bound((1, 25));
+        let v5 = Vector2DInt::new((2, -1), (-5, 4));
+        let v6 = Vector2DInt::new((-1, -2), (4, 5));
+
+        assert_eq!(v1.cw_normal(), v2);
+        assert_relative_eq!(v1.cw_normal().angle(&v1).to_degrees(), 90.0);
+        // preserves magnitude
+        assert_relative_eq!(v1.cw_normal().magnitude(), v1.magnitude());
+        // dot product is zero
+        assert_eq!(v1.cw_normal().dot_product(&v1), 0);
+        // scalar association
+        assert_eq!((v1 * 6).cw_normal(), v1.cw_normal() * 6);
+        // linear
+        assert_eq!((v1 * 6 + v1 * 8).cw_normal(), (v1 * 6).cw_normal() + (v1 * 8).cw_normal());
+        // anti-potent
+        assert_eq!(v1.cw_normal().cw_normal(), -v1);
+
+        assert_eq!(v3.cw_normal(), v4);
+        assert_relative_eq!(v3.cw_normal().angle(&v3).to_degrees(), 90.0);
+        assert_relative_eq!(v3.cw_normal().magnitude(), v3.magnitude());
+        assert_relative_eq!(v5.magnitude(), v6.magnitude());
+
+        assert_eq!(v5.cw_normal(), v6);
+        assert_relative_eq!(v5.cw_normal().angle(&v5).to_degrees(), 90.0);
+        assert_relative_eq!(v5.cw_normal().magnitude(), v5.magnitude());
+        // tests of begin and end coordinate locations in the ccw normal
+        assert_eq!(v5.cw_normal().begin.x, -1);
+        assert_eq!(v5.cw_normal().begin.y, -2);
+        assert_eq!(v5.cw_normal().end().x, 4);
+        assert_eq!(v5.cw_normal().end().y, 5);
     }
 
     #[test]
