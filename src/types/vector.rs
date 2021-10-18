@@ -37,6 +37,14 @@ impl Vector2DInt {
         Self::new_bound((0, 0))
     }
 
+    /// Normalize the [`Vector2DInt`]to a [`Vector2DFloat`] unit vector.  
+    /// Note that normalization changes the type.
+    pub fn normalize(&self) -> Vector2DFloat {
+        let x = self.coord.x as f64 / self.magnitude();
+        let y = self.coord.y as f64 / self.magnitude();
+        Vector2DFloat::new_bound((x, y))
+    }
+
     /// Euclidean vector magnitude.
     pub fn magnitude(&self) -> f64 {
         // uses the dot product approach for performance
@@ -153,6 +161,13 @@ impl Vector2DFloat {
 
     pub fn zero() -> Self {
         Self::new_bound((0.0, 0.0))
+    }
+
+    /// Normalize the [`Vector2DFloat`] to a unit vector.
+    pub fn normalize(&self) -> Vector2DFloat {
+        let x = self.coord.x as f64 / self.magnitude();
+        let y = self.coord.y as f64 / self.magnitude();
+        Vector2DFloat::new_bound((x, y))
     }
 
     /// Euclidean vector magnitude.
@@ -305,6 +320,16 @@ mod tests {
         let v = Vector2DInt::new((1, 2), (3, 4));
         assert_eq!(v.end().x, 3);
         assert_eq!(v.end().y, 4);
+    }
+
+    #[test]
+    fn vector2dint_normalize() {
+        let v1 = Vector2DInt::new_bound((25, 30));
+        let v2 = Vector2DInt::new_bound((-25, -30));
+        assert_relative_eq!(v1.normalize().magnitude(), 1.0);
+        assert_relative_eq!(v2.normalize().magnitude(), 1.0);
+        assert_relative_eq!((v1.normalize() * v1.magnitude()).magnitude(), v1.magnitude());
+        assert_relative_eq!((v2.normalize() * v2.magnitude()).magnitude(), v2.magnitude());
     }
 
     #[test]
@@ -520,6 +545,16 @@ mod tests {
         let v = Vector2DFloat::new((1.0, 2.0), (3.0, 4.0));
         assert_relative_eq!(v.end().x, 3.0);
         assert_relative_eq!(v.end().y, 4.0);
+    }
+
+    #[test]
+    fn vector2dfloat_normalize() {
+        let v1 = Vector2DFloat::new_bound((25.123, 30.456));
+        let v2 = Vector2DFloat::new_bound((-25.123, -30.456));
+        assert_relative_eq!(v1.normalize().magnitude(), 1.0);
+        assert_relative_eq!(v2.normalize().magnitude(), 1.0);
+        assert_relative_eq!((v1.normalize() * v1.magnitude()).magnitude(), v1.magnitude());
+        assert_relative_eq!((v2.normalize() * v2.magnitude()).magnitude(), v2.magnitude());
     }
 
     #[test]
