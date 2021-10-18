@@ -1,3 +1,5 @@
+//! Point types.
+
 use std::fmt;
 
 use super::coordinate::{

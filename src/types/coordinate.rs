@@ -1,3 +1,5 @@
+//! Coordinate types.
+
 use std::fmt;
 
 use approx::relative_eq;
