@@ -73,6 +73,11 @@ impl Vector2DInt {
 
         Ok(self.dot_product(other) == 0)
     }
+
+    /// Calculate the angle between two [`Vector2DInt`] in radians.
+    pub fn angle(&self, other: &Vector2DInt) -> f64 {
+        self.normalize().dot_product(&other.normalize()).acos()
+    }
 }
 
 /// [`Vector2DInt`] addition with the `+` operator
@@ -201,6 +206,11 @@ impl Vector2DFloat {
         }
 
         Ok(relative_eq!(self.dot_product(other), 0.0))
+    }
+
+    /// Calculate the angle between two [`Vector2DFloat`] in radians.
+    pub fn angle(&self, other: &Vector2DFloat) -> f64 {
+        self.normalize().dot_product(&other.normalize()).acos()
     }
 }
 
@@ -514,6 +524,22 @@ mod tests {
     }
 
     #[test]
+    fn vector2dint_angle() {
+        let v1 = Vector2DInt::new_bound((0, 10));
+        let v2 = Vector2DInt::new_bound((10, 0));
+        let v3 = Vector2DInt::new_bound((-100, 0));
+        let v4 = Vector2DInt::new_bound((0, -25));
+        assert_relative_eq!(v1.angle(&v2).to_degrees(), 90.0);
+        assert!(v1.angle(&v2).is_sign_positive());
+        assert_relative_eq!(v2.angle(&v1).to_degrees(), 90.0);
+        assert!(v2.angle(&v1).is_sign_positive());
+        assert_relative_eq!(v2.angle(&v3).to_degrees(), 180.0);
+        assert!(v2.angle(&v3).is_sign_positive());
+        assert_relative_eq!(v2.angle(&v4).to_degrees(), 90.0);
+        assert!(v2.angle(&v4).is_sign_positive());
+    }
+
+    #[test]
     fn vector2dfloat_instantiation() {
         let v = Vector2DFloat::new((1.0, 2.0), (3.123, 4.321));
         assert_eq!(v.coord, F2DCoordinate::new(2.123, 2.321));
@@ -755,5 +781,21 @@ mod tests {
         assert!(v4.is_perpendicular(&v1).is_err());
         assert!(matches!(v1.is_perpendicular(&v4), Err(VectorError::ValueError(_))));
         assert!(matches!(v4.is_perpendicular(&v1), Err(VectorError::ValueError(_))));
+    }
+
+    #[test]
+    fn vector2dfloat_angle() {
+        let v1 = Vector2DFloat::new_bound((0.0, 10.0));
+        let v2 = Vector2DFloat::new_bound((10.0, 0.0));
+        let v3 = Vector2DFloat::new_bound((-100.0, 0.0));
+        let v4 = Vector2DFloat::new_bound((0.0, -25.0));
+        assert_relative_eq!(v1.angle(&v2).to_degrees(), 90.0);
+        assert!(v1.angle(&v2).is_sign_positive());
+        assert_relative_eq!(v2.angle(&v1).to_degrees(), 90.0);
+        assert!(v2.angle(&v1).is_sign_positive());
+        assert_relative_eq!(v2.angle(&v3).to_degrees(), 180.0);
+        assert!(v2.angle(&v3).is_sign_positive());
+        assert_relative_eq!(v2.angle(&v4).to_degrees(), 90.0);
+        assert!(v2.angle(&v4).is_sign_positive());
     }
 }
