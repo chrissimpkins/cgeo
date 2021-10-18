@@ -1,6 +1,11 @@
+//! Vector types.
+
 use std::ops::{Add, Mul, Neg, Sub};
 
-use super::coordinate::{F2DCoordinate, I2DCoordinate};
+use approx::relative_eq;
+
+use crate::error::VectorError;
+use crate::types::coordinate::{F2DCoordinate, I2DCoordinate};
 
 // trait Vectorable {
 //     // marker trait for now
@@ -48,6 +53,17 @@ impl Vector2DInt {
 
     pub fn dot_product(&self, other: &Vector2DInt) -> i64 {
         (self.coord.x * other.coord.x) + (self.coord.y * other.coord.y)
+    }
+
+    pub fn is_perpendicular(&self, other: &Vector2DInt) -> Result<bool, VectorError> {
+        if (self.coord.x == 0 && self.coord.y == 0) || (other.coord.x == 0 && other.coord.y == 0) {
+            return Err(VectorError::ValueError(
+                "Invalid use of a zero vector in the Vector2DInt::is_perpendicular calculation"
+                    .into(),
+            ));
+        }
+
+        Ok(self.dot_product(other) == 0)
     }
 }
 
@@ -157,6 +173,19 @@ impl Vector2DFloat {
 
     pub fn dot_product(&self, other: &Vector2DFloat) -> f64 {
         (self.coord.x * other.coord.x) + (self.coord.y * other.coord.y)
+    }
+
+    pub fn is_perpendicular(&self, other: &Vector2DFloat) -> Result<bool, VectorError> {
+        if (relative_eq!(self.coord.x, 0.0) && relative_eq!(self.coord.y, 0.0))
+            || (relative_eq!(other.coord.x, 0.0) && relative_eq!(other.coord.y, 0.0))
+        {
+            return Err(VectorError::ValueError(
+                "Invalid use of a zero vector in the Vector2DFloat::is_perpendicular calculation"
+                    .into(),
+            ));
+        }
+
+        Ok(relative_eq!(self.dot_product(other), 0.0))
     }
 }
 
@@ -443,6 +472,23 @@ mod tests {
     }
 
     #[test]
+    fn vector2dint_is_perpendicular() {
+        let v1 = Vector2DInt::new_bound((0, 1));
+        let v2 = Vector2DInt::new_bound((1, 0));
+        let v3 = Vector2DInt::new_bound((3, 4));
+        let v4 = Vector2DInt::new_bound((0, 0));
+        assert!(v1.is_perpendicular(&v2).is_ok());
+        assert!(v1.is_perpendicular(&v2).unwrap());
+        assert!(v1.is_perpendicular(&v3).is_ok());
+        assert!(!v1.is_perpendicular(&v3).unwrap());
+        // calculation does not support use of zero vectors
+        assert!(v1.is_perpendicular(&v4).is_err());
+        assert!(v4.is_perpendicular(&v1).is_err());
+        assert!(matches!(v1.is_perpendicular(&v4), Err(VectorError::ValueError(_))));
+        assert!(matches!(v4.is_perpendicular(&v1), Err(VectorError::ValueError(_))));
+    }
+
+    #[test]
     fn vector2dfloat_instantiation() {
         let v = Vector2DFloat::new((1.0, 2.0), (3.123, 4.321));
         assert_eq!(v.coord, F2DCoordinate::new(2.123, 2.321));
@@ -657,5 +703,22 @@ mod tests {
         assert_relative_eq!(x2.begin.y, 2.0);
         assert_relative_eq!(x2.end().x, 3.0);
         assert_relative_eq!(x2.end().y, 4.0);
+    }
+
+    #[test]
+    fn vector2dfloat_is_perpendicular() {
+        let v1 = Vector2DFloat::new_bound((0.0, 1.0));
+        let v2 = Vector2DFloat::new_bound((1.0, 0.0));
+        let v3 = Vector2DFloat::new_bound((3.0, 4.0));
+        let v4 = Vector2DFloat::new_bound((0.0, 0.0));
+        assert!(v1.is_perpendicular(&v2).is_ok());
+        assert!(v1.is_perpendicular(&v2).unwrap());
+        assert!(v1.is_perpendicular(&v3).is_ok());
+        assert!(!v1.is_perpendicular(&v3).unwrap());
+        // calculation does not support use of zero vectors
+        assert!(v1.is_perpendicular(&v4).is_err());
+        assert!(v4.is_perpendicular(&v1).is_err());
+        assert!(matches!(v1.is_perpendicular(&v4), Err(VectorError::ValueError(_))));
+        assert!(matches!(v4.is_perpendicular(&v1), Err(VectorError::ValueError(_))));
     }
 }
