@@ -33,7 +33,7 @@ impl Vector2DInt {
         Self { begin: I2DCoordinate::origin(), coord: I2DCoordinate::new(end.0, end.1) }
     }
 
-    pub fn zero() -> Self {
+    pub fn new_zero() -> Self {
         Self::new_bound((0, 0))
     }
 
@@ -184,7 +184,7 @@ impl Vector2DFloat {
         Self { begin: F2DCoordinate::origin(), coord: F2DCoordinate::new(end.0, end.1) }
     }
 
-    pub fn zero() -> Self {
+    pub fn new_zero() -> Self {
         Self::new_bound((0.0, 0.0))
     }
 
@@ -345,7 +345,7 @@ mod tests {
         let v = Vector2DInt::new_bound((3, 4));
         assert_eq!(v.coord, I2DCoordinate::new(3, 4));
 
-        let v = Vector2DInt::zero();
+        let v = Vector2DInt::new_zero();
         assert_eq!(v.coord, I2DCoordinate::new(0, 0));
         assert_eq!(v.begin, I2DCoordinate::new(0, 0));
     }
@@ -661,7 +661,7 @@ mod tests {
         let v = Vector2DFloat::new_bound((3.123, 4.321));
         assert_eq!(v.coord, F2DCoordinate::new(3.123, 4.321));
 
-        let v = Vector2DInt::zero();
+        let v = Vector2DInt::new_zero();
         assert_eq!(v.coord, F2DCoordinate::new(0.0, 0.0));
         assert_eq!(v.begin, F2DCoordinate::new(0.0, 0.0));
     }
