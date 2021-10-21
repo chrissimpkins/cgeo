@@ -63,6 +63,10 @@ impl Vector2DInt {
         (self.coord.x * other.coord.x) + (self.coord.y * other.coord.y)
     }
 
+    pub fn exterior_product(&self, other: &Vector2DInt) -> i64 {
+        (self.coord.x * other.coord.y) - (self.coord.y * other.coord.x)
+    }
+
     pub fn is_perpendicular(&self, other: &Vector2DInt) -> Result<bool, VectorError> {
         if (self.coord.x == 0 && self.coord.y == 0) || (other.coord.x == 0 && other.coord.y == 0) {
             return Err(VectorError::ValueError(
@@ -213,6 +217,10 @@ impl Vector2DFloat {
 
     pub fn dot_product(&self, other: &Vector2DFloat) -> f64 {
         (self.coord.x * other.coord.x) + (self.coord.y * other.coord.y)
+    }
+
+    pub fn exterior_product(&self, other: &Vector2DFloat) -> f64 {
+        (self.coord.x * other.coord.y) - (self.coord.y * other.coord.x)
     }
 
     pub fn is_perpendicular(&self, other: &Vector2DFloat) -> Result<bool, VectorError> {
@@ -396,6 +404,27 @@ mod tests {
         let x2 = v2 * 6;
         assert_eq!(x1.dot_product(&x2), ((3 * 6) * v1.dot_product(&v2)));
         assert_eq!(v1.dot_product(&(v2 + v3)), v1.dot_product(&v2) + v1.dot_product(&v3));
+    }
+
+    #[test]
+    fn vector2dint_exterior_product() {
+        let v1 = Vector2DInt::new_bound((1, 2));
+        let v2 = Vector2DInt::new_bound((3, 4));
+        let v3 = Vector2DInt::new_bound((-3, -4));
+        let v4 = Vector2DInt::new_bound((5, 6));
+        assert_eq!(v1.exterior_product(&v2), -2);
+        assert_eq!(v1.exterior_product(&v3), 2);
+        // nilpotent
+        assert_eq!(v1.exterior_product(&v1), 0);
+        // scalar association
+        assert_eq!((v1 * 4).exterior_product(&(v2 * 6)), (v1.exterior_product(&v2) * (4 * 6)));
+        // antisymmetric
+        assert_eq!(v1.exterior_product(&v2), -v2.exterior_product(&v1));
+        // additive distribution
+        let ep1 = v1.exterior_product(&v2);
+        let ep2 = v1.exterior_product(&v4);
+        let vec_sum = v2 + v4;
+        assert_eq!(v1.exterior_product(&vec_sum), (ep1 + ep2));
     }
 
     #[test]
@@ -708,6 +737,30 @@ mod tests {
         let x2 = v2 * 6.1;
         assert_relative_eq!(x1.dot_product(&x2), ((3.1 * 6.1) * v1.dot_product(&v2)));
         assert_relative_eq!(v1.dot_product(&(v2 + v3)), v1.dot_product(&v2) + v1.dot_product(&v3));
+    }
+
+    #[test]
+    fn vector2dfloat_exterior_product() {
+        let v1 = Vector2DFloat::new_bound((1.0, 2.0));
+        let v2 = Vector2DFloat::new_bound((3.0, 4.0));
+        let v3 = Vector2DFloat::new_bound((-3.0, -4.0));
+        let v4 = Vector2DFloat::new_bound((5.0, 6.0));
+        assert_eq!(v1.exterior_product(&v2), -2.0);
+        assert_eq!(v1.exterior_product(&v3), 2.0);
+        // nilpotent
+        assert_eq!(v1.exterior_product(&v1), 0.0);
+        // scalar association
+        assert_eq!(
+            (v1 * 4.0).exterior_product(&(v2 * 6.0)),
+            (v1.exterior_product(&v2) * (4.0 * 6.0))
+        );
+        // antisymmetric
+        assert_eq!(v1.exterior_product(&v2), -v2.exterior_product(&v1));
+        // additive distribution
+        let ep1 = v1.exterior_product(&v2);
+        let ep2 = v1.exterior_product(&v4);
+        let vec_sum = v2 + v4;
+        assert_eq!(v1.exterior_product(&vec_sum), (ep1 + ep2));
     }
 
     #[test]
