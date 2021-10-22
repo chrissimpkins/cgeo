@@ -78,6 +78,18 @@ impl Vector2DInt {
         Ok(self.dot_product(other) == 0)
     }
 
+    pub fn is_left_of(&self, other: &Vector2DInt) -> bool {
+        self.exterior_product(other) < 0
+    }
+
+    pub fn is_right_of(&self, other: &Vector2DInt) -> bool {
+        self.exterior_product(other) > 0
+    }
+
+    pub fn is_collinear(&self, other: &Vector2DInt) -> bool {
+        self.exterior_product(other) == 0
+    }
+
     /// Calculate the angle between two [`Vector2DInt`] in radians.
     pub fn angle(&self, other: &Vector2DInt) -> f64 {
         self.normalize().dot_product(&other.normalize()).acos()
@@ -234,6 +246,18 @@ impl Vector2DFloat {
         }
 
         Ok(relative_eq!(self.dot_product(other), 0.0))
+    }
+
+    pub fn is_left_of(&self, other: &Vector2DFloat) -> bool {
+        self.exterior_product(other) < 0.0
+    }
+
+    pub fn is_right_of(&self, other: &Vector2DFloat) -> bool {
+        self.exterior_product(other) > 0.0
+    }
+
+    pub fn is_collinear(&self, other: &Vector2DFloat) -> bool {
+        relative_eq!(self.exterior_product(other), 0.0)
     }
 
     /// Calculate the angle between two [`Vector2DFloat`] in radians.
@@ -593,6 +617,42 @@ mod tests {
     }
 
     #[test]
+    fn vector2dint_is_left_of() {
+        let v1 = Vector2DInt::new_bound((2, 2));
+        let v2 = Vector2DInt::new_bound((2, 4));
+        let v3 = Vector2DInt::new_bound((3, -2));
+        let v4 = Vector2DInt::new_bound((1, 1));
+        assert!(!v1.is_left_of(&v2));
+        assert!(v1.is_left_of(&v3));
+        // collinear should not return true
+        assert!(!v1.is_left_of(&v4));
+    }
+
+    #[test]
+    fn vector2dint_is_right_of() {
+        let v1 = Vector2DInt::new_bound((2, 2));
+        let v2 = Vector2DInt::new_bound((2, 4));
+        let v3 = Vector2DInt::new_bound((3, -2));
+        let v4 = Vector2DInt::new_bound((1, 1));
+        assert!(v1.is_right_of(&v2));
+        assert!(!v1.is_right_of(&v3));
+        // collinear should not return true
+        assert!(!v1.is_right_of(&v4));
+    }
+
+    #[test]
+    fn vector2dint_is_collinear() {
+        let v1 = Vector2DInt::new_bound((2, 2));
+        let v2 = Vector2DInt::new_bound((2, 4));
+        let v3 = Vector2DInt::new_bound((3, -2));
+        let v4 = Vector2DInt::new_bound((1, 1));
+        assert!(!v1.is_collinear(&v2));
+        assert!(!v1.is_collinear(&v3));
+        // collinear
+        assert!(v1.is_collinear(&v4));
+    }
+
+    #[test]
     fn vector2dint_angle() {
         let v1 = Vector2DInt::new_bound((0, 10));
         let v2 = Vector2DInt::new_bound((10, 0));
@@ -947,6 +1007,42 @@ mod tests {
         assert!(v4.is_perpendicular(&v1).is_err());
         assert!(matches!(v1.is_perpendicular(&v4), Err(VectorError::ValueError(_))));
         assert!(matches!(v4.is_perpendicular(&v1), Err(VectorError::ValueError(_))));
+    }
+
+    #[test]
+    fn vector2dfloat_is_left_of() {
+        let v1 = Vector2DFloat::new_bound((2.0, 2.0));
+        let v2 = Vector2DFloat::new_bound((2.0, 4.0));
+        let v3 = Vector2DFloat::new_bound((3.0, -2.0));
+        let v4 = Vector2DFloat::new_bound((1.0, 1.0));
+        assert!(!v1.is_left_of(&v2));
+        assert!(v1.is_left_of(&v3));
+        // collinear should not return true
+        assert!(!v1.is_left_of(&v4));
+    }
+
+    #[test]
+    fn vector2dfloat_is_right_of() {
+        let v1 = Vector2DFloat::new_bound((2.0, 2.0));
+        let v2 = Vector2DFloat::new_bound((2.0, 4.0));
+        let v3 = Vector2DFloat::new_bound((3.0, -2.0));
+        let v4 = Vector2DFloat::new_bound((1.0, 1.0));
+        assert!(v1.is_right_of(&v2));
+        assert!(!v1.is_right_of(&v3));
+        // collinear should not return true
+        assert!(!v1.is_right_of(&v4));
+    }
+
+    #[test]
+    fn vector2dfloat_is_collinear() {
+        let v1 = Vector2DFloat::new_bound((2.0, 2.0));
+        let v2 = Vector2DFloat::new_bound((2.0, 4.0));
+        let v3 = Vector2DFloat::new_bound((3.0, -2.0));
+        let v4 = Vector2DFloat::new_bound((1.0, 1.0));
+        assert!(!v1.is_collinear(&v2));
+        assert!(!v1.is_collinear(&v3));
+        // collinear
+        assert!(v1.is_collinear(&v4));
     }
 
     #[test]
