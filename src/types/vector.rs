@@ -7,9 +7,9 @@ use approx::relative_eq;
 use crate::error::VectorError;
 use crate::types::coordinate::{F2DCoordinate, I2DCoordinate};
 
-// trait Vectorable {
-//     // marker trait for now
-// }
+trait VectorType {
+    // marker trait for now
+}
 
 /// A 2D vector struct with [`i64`] coordinates
 #[derive(Copy, Clone, Debug)]
@@ -20,6 +20,8 @@ pub struct Vector2DInt {
     /// a start (0, 0) origin coordinate.
     pub coord: I2DCoordinate,
 }
+
+impl VectorType for Vector2DInt {}
 
 impl Vector2DInt {
     pub fn new(begin: (i64, i64), end: (i64, i64)) -> Self {
@@ -187,6 +189,8 @@ pub struct Vector2DFloat {
     /// a start (0, 0) origin coordinate.
     pub coord: F2DCoordinate,
 }
+
+impl VectorType for Vector2DFloat {}
 
 impl Vector2DFloat {
     pub fn new(begin: (f64, f64), end: (f64, f64)) -> Self {
