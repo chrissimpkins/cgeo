@@ -1,8 +1,10 @@
 //! Error types.
 
-/// Errors that occur while working with
+/// Errors that occur while working with [`crate::types::vector::Vector2DInt`]
+/// and [`crate::types::vector::Vector2DFloat`] types
 #[derive(Debug)]
 pub enum VectorError {
+    /// ValueError occurs when an invalid value is used in an operation
     ValueError(String),
 }
 
