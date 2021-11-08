@@ -2,8 +2,8 @@
 //!
 //! ## About
 //!
-//! This crate is a 2D computational geometry library that supports geometric primitives and
-//! fundamental 2D geometric types with computationally efficient algorithms.
+//! This crate is a 2D computational geometry library that supports geometric primitives,
+//! fundamental 2D geometric types, and aggregates with computationally efficient algorithms.
 //!
 //! ## Source
 //!
