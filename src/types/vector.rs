@@ -2,13 +2,185 @@
 
 use std::ops::{Add, Mul, Neg, Sub};
 
-use approx::relative_eq;
+use approx::{relative_eq, RelativeEq};
+use num::Num;
 
 use crate::error::VectorError;
 use crate::types::coordinate::{F2DCoordinate, I2DCoordinate};
 
 trait VectorType {
     // marker trait for now
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct Vector<N: Num + Copy> {
+    pub begin: (N, N),
+    pub coord: (N, N),
+}
+
+impl<N> Vector<N>
+where
+    N: Num + Copy,
+{
+    pub fn new(begin: (N, N), end: (N, N)) -> Self {
+        Self { begin, coord: (end.0 - begin.0, end.1 - begin.1) }
+    }
+
+    pub fn new_bound(end: (N, N)) -> Self {
+        Self { begin: (N::zero(), N::zero()), coord: (end.0, end.1) }
+    }
+
+    pub fn new_zero() -> Self {
+        Self::new_bound((N::zero(), N::zero()))
+    }
+
+    pub fn begin(&self) -> (N, N) {
+        self.begin
+    }
+
+    pub fn end(&self) -> (N, N) {
+        (self.coord.0 + self.begin.0, self.coord.1 + self.begin.1)
+    }
+
+    pub fn dot_product(&self, other: &Vector<N>) -> N {
+        (self.coord.0 * other.coord.0) + (self.coord.1 * other.coord.1)
+    }
+
+    // private methods
+    fn partial_eq_int(&self, other: &Vector<N>) -> bool {
+        (self.coord.0 == other.coord.0) && (self.coord.1 == other.coord.1)
+    }
+
+    fn partial_eq_float(&self, other: &Vector<N>) -> bool
+    where
+        N: Num + Copy + RelativeEq<N>,
+    {
+        relative_eq!(self.coord.0, other.coord.0) && relative_eq!(self.coord.1, other.coord.1)
+    }
+}
+
+/// [`Vector`] addition with the `+` operator
+impl<N> Add for Vector<N>
+where
+    N: Num + Copy,
+{
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self { begin: self.begin, coord: (self.coord.0 + rhs.coord.0, self.coord.1 + rhs.coord.1) }
+    }
+}
+
+/// [`Vector`] subtraction with the `-` operator
+impl<N> Sub for Vector<N>
+where
+    N: Num + Copy,
+{
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self { begin: self.begin, coord: (self.coord.0 - rhs.coord.0, self.coord.1 - rhs.coord.1) }
+    }
+}
+
+/// [`Vector`] unary negation with the `-` operator
+impl<N> Neg for Vector<N>
+where
+    N: Num + Copy,
+{
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self::new((self.end().0, self.end().1), (self.begin().0, self.begin().1))
+    }
+}
+
+/// [`Vector`] scalar multiplication using the `*` operator
+impl<N> Mul<N> for Vector<N>
+where
+    N: Num + Copy,
+{
+    type Output = Self;
+
+    fn mul(self, rhs: N) -> Self::Output {
+        Self { begin: self.begin, coord: (rhs * self.coord.0, rhs * self.coord.1) }
+    }
+}
+
+/// Partial equivalence is defined based on vector magnitude and
+/// direction comparisons only.  Vectors with different begin and
+/// end coordinates are defined as equivalent when they have the same
+/// magnitude and direction but different locations in coordinate space.
+impl PartialEq<Vector<u8>> for Vector<u8> {
+    fn eq(&self, other: &Vector<u8>) -> bool {
+        self.partial_eq_int(other)
+    }
+}
+
+impl PartialEq<Vector<u16>> for Vector<u16> {
+    fn eq(&self, other: &Vector<u16>) -> bool {
+        self.partial_eq_int(other)
+    }
+}
+
+impl PartialEq<Vector<u32>> for Vector<u32> {
+    fn eq(&self, other: &Vector<u32>) -> bool {
+        self.partial_eq_int(other)
+    }
+}
+
+impl PartialEq<Vector<u64>> for Vector<u64> {
+    fn eq(&self, other: &Vector<u64>) -> bool {
+        self.partial_eq_int(other)
+    }
+}
+
+impl PartialEq<Vector<u128>> for Vector<u128> {
+    fn eq(&self, other: &Vector<u128>) -> bool {
+        self.partial_eq_int(other)
+    }
+}
+
+impl PartialEq<Vector<i8>> for Vector<i8> {
+    fn eq(&self, other: &Vector<i8>) -> bool {
+        self.partial_eq_int(other)
+    }
+}
+
+impl PartialEq<Vector<i16>> for Vector<i16> {
+    fn eq(&self, other: &Vector<i16>) -> bool {
+        self.partial_eq_int(other)
+    }
+}
+
+impl PartialEq<Vector<i32>> for Vector<i32> {
+    fn eq(&self, other: &Vector<i32>) -> bool {
+        self.partial_eq_int(other)
+    }
+}
+
+impl PartialEq<Vector<i64>> for Vector<i64> {
+    fn eq(&self, other: &Vector<i64>) -> bool {
+        self.partial_eq_int(other)
+    }
+}
+
+impl PartialEq<Vector<i128>> for Vector<i128> {
+    fn eq(&self, other: &Vector<i128>) -> bool {
+        self.partial_eq_int(other)
+    }
+}
+
+impl PartialEq<Vector<f32>> for Vector<f32> {
+    fn eq(&self, other: &Vector<f32>) -> bool {
+        self.partial_eq_float(other)
+    }
+}
+
+impl PartialEq<Vector<f64>> for Vector<f64> {
+    fn eq(&self, other: &Vector<f64>) -> bool {
+        self.partial_eq_float(other)
+    }
 }
 
 /// A 2D vector struct with [`i64`] coordinates
@@ -372,6 +544,107 @@ mod tests {
     #[allow(unused_imports)]
     use pretty_assertions::{assert_eq, assert_ne};
 
+    // =====================
+    // Vector
+    // =====================
+    #[test]
+    fn vector_instantiation() {
+        let v1 = Vector::new((1, 2), (3, 4));
+        let v2 = Vector::new((1 as i64, 2 as i64), (3 as i64, 4 as i64));
+        let v3 = Vector::new((1.0, 2.0), (3.0, 4.0));
+        let v4 = Vector::new((1.0 as f32, 2.0 as f32), (3.0 as f32, 4.0 as f32));
+        assert_eq!(v1.coord, (2 as i32, 2 as i32));
+        assert_eq!(v1.begin, (1 as i32, 2 as i32));
+        assert_eq!(v2.coord, (2 as i64, 2 as i64));
+        assert_eq!(v2.begin, (1 as i64, 2 as i64));
+        assert_relative_eq!(v3.coord.0, 2.0 as f64);
+        assert_relative_eq!(v3.coord.1, 2.0 as f64);
+        assert_relative_eq!(v3.begin.0, 1.0 as f64);
+        assert_relative_eq!(v3.begin.1, 2.0 as f64);
+        assert_relative_eq!(v4.coord.0, 2.0 as f32);
+        assert_relative_eq!(v4.coord.1, 2.0 as f32);
+        assert_relative_eq!(v4.begin.0, 1.0 as f32);
+        assert_relative_eq!(v4.begin.1, 2.0 as f32);
+    }
+
+    #[test]
+    fn vector_new_bound() {
+        let v1 = Vector::new_bound((1, 2));
+        let v2 = Vector::new_bound((1.0, 2.0));
+        assert_eq!(v1.begin, (0, 0));
+        assert_eq!(v1.coord, (1, 2));
+        assert_relative_eq!(v2.begin.0, 0.0);
+        assert_relative_eq!(v2.begin.1, 0.0);
+        assert_relative_eq!(v2.coord.0, 1.0);
+        assert_relative_eq!(v2.coord.1, 2.0);
+    }
+
+    #[test]
+    fn vector_begin() {
+        let v1 = Vector::new((1, 2), (3, 4));
+        let v2 = Vector::new((1.0, 2.0), (3.0, 4.0));
+        assert_eq!(v1.begin, (1, 2));
+        assert_relative_eq!(v2.begin.0, 1.0);
+        assert_relative_eq!(v2.begin.1, 2.0);
+    }
+
+    #[test]
+    fn vector_end() {
+        let v1 = Vector::new((1, 2), (3, 4));
+        let v2 = Vector::new((1.0, 2.0), (3.0, 4.0));
+        assert_eq!(v1.end(), (3, 4));
+        assert_relative_eq!(v2.end().0, 3.0);
+        assert_relative_eq!(v2.end().1, 4.0);
+    }
+
+    #[test]
+    fn vector_unary_neg_operator() {
+        let v1 = Vector::new((1, 2), (3, 4));
+        let v2 = Vector::new((3, 4), (1, 2));
+        let v3 = Vector::new((-1, -2), (-3, -4));
+        let v4 = Vector::new((-3, -4), (-1, -2));
+        assert_eq!(v1.coord.0, 2);
+        assert_eq!(v1.coord.1, 2);
+        assert_eq!(-v1.coord.0, -2);
+        assert_eq!(-v1.coord.1, -2);
+        assert_eq!(-v1, -v1);
+        assert_eq!(-v1, v2);
+        assert_eq!(-v3, -v3);
+        assert_eq!(-v3, v4);
+
+        let v5 = Vector::new((1.0, 2.0), (3.0, 4.0));
+        let v6 = Vector::new((3.0, 4.0), (1.0, 2.0));
+        let v7 = Vector::new((-1.0, -2.0), (-3.0, -4.0));
+        let v8 = Vector::new((-3.0, -4.0), (-1.0, -2.0));
+        assert_relative_eq!(v5.coord.0, 2.0);
+        assert_relative_eq!(v5.coord.1, 2.0);
+        assert_eq!(-v5.coord.0, -2.0);
+        assert_eq!(-v5.coord.1, -2.0);
+        assert_eq!(-v5, -v5);
+        assert_eq!(-v5, v6);
+        assert_eq!(-v7, -v7);
+        assert_eq!(-v7, v8);
+    }
+
+    #[test]
+    fn vector_dot_product() {
+        let v1 = Vector::new_bound((1, 2));
+        let v2 = Vector::new_bound((3, 4));
+        let v3 = Vector::new_bound((5, 6));
+        let v4 = Vector::new_bound((-3, -4));
+        assert_eq!(v1.dot_product(&v2), 11);
+        assert_eq!(v1.dot_product(&v4), -11);
+        assert_eq!(-v1.dot_product(&-v2), 11);
+        assert_eq!(v1.dot_product(&v2), v2.dot_product(&v1));
+        let x1 = v1 * 3;
+        let x2 = v2 * 6;
+        assert_eq!(x1.dot_product(&x2), ((3 * 6) * v1.dot_product(&v2)));
+        assert_eq!(v1.dot_product(&(v2 + v3)), v1.dot_product(&v2) + v1.dot_product(&v3));
+    }
+
+    // =====================
+    // Vector2DInt
+    // =====================
     #[test]
     fn vector2dint_instantiation() {
         let v = Vector2DInt::new((1, 2), (3, 4));
