@@ -59,6 +59,18 @@ where
     }
 }
 
+/// [`Vector`] unary negation with the `-` operator
+impl<N> Neg for Vector<N>
+where
+    N: Num + Copy,
+{
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self::new((self.end().0, self.end().1), (self.begin().0, self.begin().1))
+    }
+}
+
 /// [`Vector`] addition with the `+` operator
 impl<N> Add for Vector<N>
 where
@@ -80,18 +92,6 @@ where
 
     fn sub(self, rhs: Self) -> Self::Output {
         Self { begin: self.begin, coord: (self.coord.0 - rhs.coord.0, self.coord.1 - rhs.coord.1) }
-    }
-}
-
-/// [`Vector`] unary negation with the `-` operator
-impl<N> Neg for Vector<N>
-where
-    N: Num + Copy,
-{
-    type Output = Self;
-
-    fn neg(self) -> Self::Output {
-        Self::new((self.end().0, self.end().1), (self.begin().0, self.begin().1))
     }
 }
 
