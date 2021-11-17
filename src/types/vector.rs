@@ -111,6 +111,12 @@ where
 /// direction comparisons only.  Vectors with different begin and
 /// end coordinates are defined as equivalent when they have the same
 /// magnitude and direction but different locations in coordinate space.
+impl PartialEq<Vector<usize>> for Vector<usize> {
+    fn eq(&self, other: &Vector<usize>) -> bool {
+        self.partial_eq_int(other)
+    }
+}
+
 impl PartialEq<Vector<u8>> for Vector<u8> {
     fn eq(&self, other: &Vector<u8>) -> bool {
         self.partial_eq_int(other)
@@ -137,6 +143,12 @@ impl PartialEq<Vector<u64>> for Vector<u64> {
 
 impl PartialEq<Vector<u128>> for Vector<u128> {
     fn eq(&self, other: &Vector<u128>) -> bool {
+        self.partial_eq_int(other)
+    }
+}
+
+impl PartialEq<Vector<isize>> for Vector<isize> {
+    fn eq(&self, other: &Vector<isize>) -> bool {
         self.partial_eq_int(other)
     }
 }
