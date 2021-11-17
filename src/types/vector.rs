@@ -758,6 +758,43 @@ mod tests {
     }
 
     #[test]
+    fn vector_mul_operator() {
+        let v1 = Vector::new_bound((2, 3));
+        let v2 = Vector::new_bound((-3, -2));
+        let v_zero = Vector::new_bound((0, 0));
+        assert_eq!(v1 * 2, Vector::new_bound((4, 6)));
+        assert_eq!(v2 * 2, Vector::new_bound((-6, -4)));
+        assert_eq!(v_zero * 10, Vector::new_bound((0, 0)));
+        assert_eq!(v_zero * 10, v_zero);
+        assert_eq!((v1 * 3) * 6, v1 * (6 * 3));
+        assert_eq!(v1 * (6 + 3), (v1 * 6) + (v1 * 3));
+        assert_eq!(v1 * (6 - 3), (v1 * 6) - (v1 * 3));
+        assert_eq!((v1 + v2) * 6, (v1 * 6) + (v2 * 6));
+        assert_eq!((v1 - v2) * 6, (v1 * 6) - (v2 * 6));
+        let v3 = Vector::new((1, 2), (3, 4));
+        let v3_2 = v3 * 2;
+        assert_eq!(v3_2.begin, v3.begin);
+        assert_ne!(v3_2.end(), v3.end());
+
+        let v1 = Vector::new_bound((2.0, 3.0));
+        let v2 = Vector::new_bound((-3.0, -2.0));
+        let v_zero = Vector::new_bound((0.0, 0.0));
+        assert_eq!(v1 * 2.0_f64, Vector::new_bound((2.0_f64 * 2.0_f64, 3.0_f64 * 2.0_f64)));
+        assert_eq!(v2 * 2.0_f64, Vector::new_bound((-3.0_f64 * 2.0_f64, -2.0_f64 * 2.0_f64)));
+        assert_eq!(v_zero * 10.0_f64, Vector::new_bound((0.0_f64 * 10.0_f64, 0.0_f64 * 10.0_f64)));
+        assert_eq!((v1 * 3.0) * 6.0, v1 * (6.0 * 3.0));
+        assert_eq!(v1 * (6.0 + 3.0), (v1 * 6.0) + (v1 * 3.0));
+        assert_eq!(v1 * (6.0 - 3.0), (v1 * 6.0) - (v1 * 3.0));
+        assert_eq!((v1 + v2) * 6.0, (v1 * 6.0) + (v2 * 6.0));
+        assert_eq!((v1 - v2) * 6.0, (v1 * 6.0) - (v2 * 6.0));
+        let v3 = Vector::new((1.0, 2.0), (3.0, 4.0));
+        let v3_2 = v3 * 2.0_f64;
+        assert_eq!(v3_2.begin, v3.begin);
+        assert_ne!(v3_2.end(), v3.end());
+        assert_ne!(v3_2, v3);
+    }
+
+    #[test]
     fn vector_dot_product() {
         let v1 = Vector::new_bound((1, 2));
         let v2 = Vector::new_bound((3, 4));
