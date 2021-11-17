@@ -22,6 +22,7 @@ impl<N> Vector<N>
 where
     N: Num + Copy,
 {
+    // public methods
     pub fn new(begin: (N, N), end: (N, N)) -> Self {
         Self { begin, coord: (end.0 - begin.0, end.1 - begin.1) }
     }
@@ -32,6 +33,18 @@ where
 
     pub fn new_zero() -> Self {
         Self::new_bound((N::zero(), N::zero()))
+    }
+
+    pub fn x(&self) -> N {
+        self.coord.0
+    }
+
+    pub fn y(&self) -> N {
+        self.coord.1
+    }
+
+    pub fn coord(&self) -> (N, N) {
+        self.coord
     }
 
     pub fn begin(&self) -> (N, N) {
@@ -588,6 +601,33 @@ mod tests {
         assert_relative_eq!(v2.begin.0, 0.0);
         assert_relative_eq!(v2.begin.1, 0.0);
         assert_relative_eq!(v2.coord.0, 1.0);
+        assert_relative_eq!(v2.coord.1, 2.0);
+    }
+
+    #[test]
+    fn vector_x() {
+        let v1 = Vector::new((1, 2), (3, 6));
+        let v2 = Vector::new((1.0, 2.0), (3.0, 6.0));
+        assert_eq!(v1.x(), 2);
+        assert_relative_eq!(v2.x(), 2.0);
+        assert_relative_eq!(v2.x(), 2.0);
+    }
+
+    #[test]
+    fn vector_y() {
+        let v1 = Vector::new((1, 2), (3, 6));
+        let v2 = Vector::new((1.0, 2.0), (3.0, 6.0));
+        assert_eq!(v1.y(), 4);
+        assert_relative_eq!(v2.y(), 4.0);
+        assert_relative_eq!(v2.y(), 4.0);
+    }
+
+    #[test]
+    fn vector_coord() {
+        let v1 = Vector::new((1, 2), (3, 4));
+        let v2 = Vector::new((1.0, 2.0), (3.0, 4.0));
+        assert_eq!(v1.coord, (2, 2));
+        assert_relative_eq!(v2.coord.0, 2.0);
         assert_relative_eq!(v2.coord.1, 2.0);
     }
 
