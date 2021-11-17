@@ -669,34 +669,92 @@ mod tests {
         assert_ne!(v5.end(), v5_v4.end());
         assert_eq!(v4_v5, v5_v4);
 
-        let v6 = Vector::new_bound((5.0, 5.0));
-        let v7 = Vector::new_bound((4.0, 4.0));
-        let v8 = Vector::new_bound((1.0, 1.0));
-        let v_zero_float = Vector::new_bound((0.0, 0.0));
-        assert_eq!(v6 + v7, Vector::new_bound((9.0, 9.0)));
-        assert_eq!(v7 + v6, Vector::new_bound((9.0, 9.0)));
-        assert_eq!(v6 + v7 + v8, Vector::new_bound((10.0, 10.0)));
-        assert_eq!((v6 + v7) + v8, Vector::new_bound((10.0, 10.0)));
-        assert_eq!(v6 + (v7 + v8), Vector::new_bound((10.0, 10.0)));
-        assert_eq!(v6 + v_zero_float, v6);
-        assert_eq!(v_zero_float + v6, v6);
-        assert_eq!(v6 + (-v6), v_zero_float);
-        let v6_v7 = v6 + v7;
-        assert_eq!(v6.begin, v6_v7.begin);
+        let v1 = Vector::new_bound((5.1, 5.1));
+        let v2 = Vector::new_bound((4.2, 4.2));
+        let v3 = Vector::new_bound((1.3, 1.3));
+        let v_zero = Vector::new_bound((0.0, 0.0));
+        assert_eq!(v1 + v2, Vector::new_bound((5.1 + 4.2, 5.1 + 4.2)));
+        assert_eq!(v2 + v1, Vector::new_bound((5.1 + 4.2, 5.1 + 4.2)));
+        assert_eq!(v1 + v2 + v3, Vector::new_bound((5.1 + 4.2 + 1.3, 5.1 + 4.2 + 1.3)));
+        assert_eq!((v1 + v2) + v3, Vector::new_bound((5.1 + 4.2 + 1.3, 5.1 + 4.2 + 1.3)));
+        assert_eq!(v1 + (v2 + v3), Vector::new_bound((5.1 + 4.2 + 1.3, 5.1 + 4.2 + 1.3)));
+        assert_eq!(v1 + v_zero, v1);
+        assert_eq!(v_zero + v1, v1);
+        assert_eq!(v1 + (-v1), v_zero);
+        let v1_v2 = v1 + v2;
+        assert_eq!(v1.begin, v1_v2.begin);
         // vectors have same distance and magnitude but different
         // begin / end coordinates. The lhs begin takes precedence
         // in addition.
-        let v9 = Vector::new((1.0, 1.0), (2.0, 2.0));
-        let v10 = Vector::new((2.0, 2.0), (3.0, 3.0));
-        let v9_v10 = v9 + v10;
-        let v10_v9 = v10 + v9;
-        assert_eq!(v9.begin, v9_v10.begin);
-        assert_ne!(v10.begin, v9_v10.begin);
-        assert_ne!(v9.end(), v9_v10.end());
-        assert_eq!(v10.begin, v10_v9.begin);
-        assert_ne!(v9.begin, v10_v9.begin);
-        assert_ne!(v10.end(), v10_v9.end());
-        assert_eq!(v9_v10, v10_v9);
+        let v4 = Vector::new((1.3, 1.3), (2.3, 2.3));
+        let v5 = Vector::new((2.3, 2.3), (3.3, 3.3));
+        let v4_v5 = v4 + v5;
+        let v5_v4 = v5 + v4;
+        assert_eq!(v4.begin, v4_v5.begin);
+        assert_ne!(v5.begin, v4_v5.begin);
+        assert_ne!(v4.end(), v4_v5.end());
+        assert_eq!(v5.begin, v5_v4.begin);
+        assert_ne!(v4.begin, v5_v4.begin);
+        assert_ne!(v5.end(), v5_v4.end());
+        assert_eq!(v4_v5, v5_v4);
+    }
+
+    #[test]
+    fn vector_sub_operator() {
+        let v1 = Vector::new_bound((5, 5));
+        let v2 = Vector::new_bound((4, 4));
+        let v3 = Vector::new_bound((1, 1));
+        let v_zero = Vector::new_bound((0, 0));
+        assert_eq!(v1 - v2, Vector::new_bound((1, 1)));
+        assert_eq!(v3 - v1, Vector::new_bound((-4, -4)));
+        assert_eq!(v1 - v_zero, v1);
+        assert_eq!(v1 - v2 - v3, v_zero);
+        assert_eq!((v1 - v2) - v3, v_zero);
+        assert_eq!(v1 - (v2 - v3), Vector::new_bound((2, 2)));
+        assert_eq!(v1 - (v2 + v3), v_zero);
+        assert_eq!(v2 - (-v3), v1);
+        let v1_v2 = v1 - v2;
+        assert_eq!(v1.begin, v1_v2.begin);
+        // vectors have same distance and magnitude but different
+        // begin / end coordinates. The lhs begin takes precedence
+        // in subtraction
+        let v4 = Vector::new((1, 1), (2, 2));
+        let v5 = Vector::new((2, 2), (3, 3));
+        let v4_v5 = v4 - v5;
+        let v5_v4 = v5 - v4;
+        assert_eq!(v4.begin, v4_v5.begin);
+        assert_ne!(v5.begin, v4_v5.begin);
+        assert_ne!(v4.end(), v4_v5.end());
+        assert_eq!(v5.begin, v5_v4.begin);
+        assert_ne!(v4.begin, v5_v4.begin);
+        assert_ne!(v5.end(), v5_v4.end());
+        assert_eq!(v4_v5, v5_v4);
+
+        let v1 = Vector::new_bound((5.3, 5.3));
+        let v2 = Vector::new_bound((4.2, 4.2));
+        let v3 = Vector::new_bound((1.1, 1.1));
+        let v_zero = Vector::new_bound((0.0, 0.0));
+        assert_eq!(v1 - v2, Vector::new_bound((5.3 - 4.2, 5.3 - 4.2)));
+        assert_eq!(v3 - v1, Vector::new_bound((1.1 - 5.3, 1.1 - 5.3)));
+        assert_eq!(v1 - v_zero, Vector::new_bound((5.3 - 0.0, 5.3 - 0.0)));
+        assert_eq!(v1 - v2 - v3, Vector::new_bound((5.3 - 4.2 - 1.1, 5.3 - 4.2 - 1.1)));
+        assert_eq!((v1 - v2) - v3, Vector::new_bound((5.3 - 4.2 - 1.1, 5.3 - 4.2 - 1.1)));
+        assert_eq!(v1 - (v2 - v3), Vector::new_bound((5.3 - (4.2 - 1.1), 5.3 - (4.2 - 1.1))));
+        assert_eq!(v1 - (v2 + v3), Vector::new_bound((5.3 - (4.2 + 1.1), 5.3 - (4.2 + 1.1))));
+        assert_eq!(v2 - (-v3), Vector::new_bound((4.2 - (-1.1), 4.2 - (-1.1))));
+        // vectors have same distance and magnitude but different
+        // begin / end coordinates. The lhs begin takes precedence
+        // in subtraction
+        let v4 = Vector::new((1.3, 1.3), (2.3, 2.3));
+        let v5 = Vector::new((2.3, 2.3), (3.3, 3.3));
+        let v4_v5 = v4 - v5;
+        let v5_v4 = v5 - v4;
+        assert_eq!(v4.begin, v4_v5.begin);
+        assert_ne!(v5.begin, v4_v5.begin);
+        assert_ne!(v4.end(), v4_v5.end());
+        assert_eq!(v5.begin, v5_v4.begin);
+        assert_ne!(v4.begin, v5_v4.begin);
+        assert_ne!(v5.end(), v5_v4.end());
     }
 
     #[test]
