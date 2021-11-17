@@ -630,8 +630,8 @@ mod tests {
         let v8 = Vector::new((-3.0, -4.0), (-1.0, -2.0));
         assert_relative_eq!(v5.coord.0, 2.0);
         assert_relative_eq!(v5.coord.1, 2.0);
-        assert_eq!(-v5.coord.0, -2.0);
-        assert_eq!(-v5.coord.1, -2.0);
+        assert_relative_eq!(-v5.coord.0, -2.0);
+        assert_relative_eq!(-v5.coord.1, -2.0);
         assert_eq!(-v5, -v5);
         assert_eq!(-v5, v6);
         assert_eq!(-v7, -v7);
