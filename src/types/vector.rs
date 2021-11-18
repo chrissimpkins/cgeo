@@ -1,6 +1,7 @@
 //! Vector types.
 
 use std::cmp::PartialOrd;
+use std::convert::From;
 use std::ops::{Add, Mul, Neg, Sub};
 
 use approx::{relative_eq, RelativeEq};
@@ -204,6 +205,7 @@ where
     }
 }
 
+// TODO: refactor to use a macro to build these impl's
 /// Partial equivalence is defined based on vector magnitude and
 /// direction comparisons only.  Vectors with different begin and
 /// end coordinates are defined as equivalent when they have the same
@@ -291,6 +293,87 @@ impl PartialEq<Vector<f64>> for Vector<f64> {
         self.partial_eq_float(other)
     }
 }
+
+// Lossless Vector numeric type conversion support with the From trait
+macro_rules! impl_vector_from {
+    ($Small: ty, $Large: ty, $doc: expr) => {
+        impl From<Vector<$Small>> for Vector<$Large> {
+            #[doc = $doc]
+            #[inline]
+            fn from(small: Vector<$Small>) -> Vector<$Large> {
+                Vector {
+                    begin: (small.begin.0 as $Large, small.begin.1 as $Large),
+                    coord: (small.coord.0 as $Large, small.coord.1 as $Large),
+                }
+            }
+        }
+    };
+    ($Small: ty, $Large: ty) => {
+        impl_vector_from!(
+            $Small,
+            $Large,
+            concat!(
+                "Converts `",
+                stringify!($Small),
+                "` to `",
+                stringify!($Large),
+                "` losslessly."
+            )
+        );
+    };
+}
+
+// Unsigned to Unsigned
+impl_vector_from!(u8, u16);
+impl_vector_from!(u8, u32);
+impl_vector_from!(u8, u64);
+impl_vector_from!(u8, u128);
+impl_vector_from!(u8, usize);
+impl_vector_from!(u16, u32);
+impl_vector_from!(u16, u64);
+impl_vector_from!(u16, u128);
+impl_vector_from!(u32, u64);
+impl_vector_from!(u32, u128);
+impl_vector_from!(u64, u128);
+
+// Signed to Signed
+impl_vector_from!(i8, i16);
+impl_vector_from!(i8, i32);
+impl_vector_from!(i8, i64);
+impl_vector_from!(i8, i128);
+impl_vector_from!(i8, isize);
+impl_vector_from!(i16, i32);
+impl_vector_from!(i16, i64);
+impl_vector_from!(i16, i128);
+impl_vector_from!(i32, i64);
+impl_vector_from!(i32, i128);
+impl_vector_from!(i64, i128);
+
+// Unsigned to Signed
+impl_vector_from!(u8, i16);
+impl_vector_from!(u8, i32);
+impl_vector_from!(u8, i64);
+impl_vector_from!(u8, i128);
+impl_vector_from!(u16, i32);
+impl_vector_from!(u16, i64);
+impl_vector_from!(u16, i128);
+impl_vector_from!(u32, i64);
+impl_vector_from!(u32, i128);
+impl_vector_from!(u64, i128);
+
+// Signed to Float
+impl_vector_from!(i8, f32);
+impl_vector_from!(i8, f64);
+impl_vector_from!(i16, f32);
+impl_vector_from!(i16, f64);
+impl_vector_from!(i32, f64);
+
+// Unsigned to Float
+impl_vector_from!(u8, f32);
+impl_vector_from!(u8, f64);
+impl_vector_from!(u16, f32);
+impl_vector_from!(u16, f64);
+impl_vector_from!(u32, f64);
 
 /// A 2D vector struct with [`i64`] coordinates
 #[derive(Copy, Clone, Debug)]
@@ -686,6 +769,338 @@ mod tests {
         assert_relative_eq!(v2.begin.1, 0.0);
         assert_relative_eq!(v2.coord.0, 1.0);
         assert_relative_eq!(v2.coord.1, 2.0);
+    }
+
+    #[test]
+    fn vector_unsigned_int_to_unsigned_int_type_casts() {
+        let v8 = Vector::<u8>::new((0, 0), (1, 1));
+        let v16 = Vector::<u16>::new((0, 0), (1, 1));
+        let v32 = Vector::<u32>::new((0, 0), (1, 1));
+        let v64 = Vector::<u64>::new((0, 0), (1, 1));
+
+        let v8_to_16 = Vector::<u16>::from(v8);
+        let _: Vector<u16> = v8.into();
+        assert_eq!(v8_to_16.begin.0, 0_u16);
+        assert_eq!(v8_to_16.begin.1, 0_u16);
+        assert_eq!(v8_to_16.coord.0, 1_u16);
+        assert_eq!(v8_to_16.coord.1, 1_u16);
+
+        let v8_to_32 = Vector::<u32>::from(v8);
+        let _: Vector<u32> = v8.into();
+        assert_eq!(v8_to_32.begin.0, 0_u32);
+        assert_eq!(v8_to_32.begin.1, 0_u32);
+        assert_eq!(v8_to_32.coord.0, 1_u32);
+        assert_eq!(v8_to_32.coord.1, 1_u32);
+
+        let v8_to_64 = Vector::<u64>::from(v8);
+        let _: Vector<u64> = v8.into();
+        assert_eq!(v8_to_64.begin.0, 0_u64);
+        assert_eq!(v8_to_64.begin.1, 0_u64);
+        assert_eq!(v8_to_64.coord.0, 1_u64);
+        assert_eq!(v8_to_64.coord.1, 1_u64);
+
+        let v8_to_128 = Vector::<u128>::from(v8);
+        let _: Vector<u128> = v8.into();
+        assert_eq!(v8_to_128.begin.0, 0_u128);
+        assert_eq!(v8_to_128.begin.1, 0_u128);
+        assert_eq!(v8_to_128.coord.0, 1_u128);
+        assert_eq!(v8_to_128.coord.1, 1_u128);
+
+        let v8_to_usize = Vector::<usize>::from(v8);
+        let _: Vector<usize> = v8.into();
+        assert_eq!(v8_to_usize.begin.0, 0_usize);
+        assert_eq!(v8_to_usize.begin.1, 0_usize);
+        assert_eq!(v8_to_usize.coord.0, 1_usize);
+        assert_eq!(v8_to_usize.coord.1, 1_usize);
+
+        let v16_to_32 = Vector::<u32>::from(v16);
+        let _: Vector<u32> = v16.into();
+        assert_eq!(v16_to_32.begin.0, 0_u32);
+        assert_eq!(v16_to_32.begin.1, 0_u32);
+        assert_eq!(v16_to_32.coord.0, 1_u32);
+        assert_eq!(v16_to_32.coord.1, 1_u32);
+
+        let v16_to_64 = Vector::<u64>::from(v16);
+        let _: Vector<u64> = v16.into();
+        assert_eq!(v16_to_64.begin.0, 0_u64);
+        assert_eq!(v16_to_64.begin.1, 0_u64);
+        assert_eq!(v16_to_64.coord.0, 1_u64);
+        assert_eq!(v16_to_64.coord.1, 1_u64);
+
+        let v16_to_128 = Vector::<u128>::from(v16);
+        let _: Vector<u128> = v16.into();
+        assert_eq!(v16_to_128.begin.0, 0_u128);
+        assert_eq!(v16_to_128.begin.1, 0_u128);
+        assert_eq!(v16_to_128.coord.0, 1_u128);
+        assert_eq!(v16_to_128.coord.1, 1_u128);
+
+        let v32_to_64 = Vector::<u64>::from(v32);
+        let _: Vector<u64> = v32.into();
+        assert_eq!(v32_to_64.begin.0, 0_u64);
+        assert_eq!(v32_to_64.begin.1, 0_u64);
+        assert_eq!(v32_to_64.coord.0, 1_u64);
+        assert_eq!(v32_to_64.coord.1, 1_u64);
+
+        let v32_to_128 = Vector::<u128>::from(v32);
+        let _: Vector<u128> = v32.into();
+        assert_eq!(v32_to_128.begin.0, 0_u128);
+        assert_eq!(v32_to_128.begin.1, 0_u128);
+        assert_eq!(v32_to_128.coord.0, 1_u128);
+        assert_eq!(v32_to_128.coord.1, 1_u128);
+
+        let v64_to_128 = Vector::<u128>::from(v64);
+        let _: Vector<u128> = v64.into();
+        assert_eq!(v64_to_128.begin.0, 0_u128);
+        assert_eq!(v64_to_128.begin.1, 0_u128);
+        assert_eq!(v64_to_128.coord.0, 1_u128);
+        assert_eq!(v64_to_128.coord.1, 1_u128);
+    }
+
+    #[test]
+    fn vector_signed_int_to_signed_int_type_casts() {
+        let v8 = Vector::<i8>::new((0, 0), (-1, 1));
+        let v16 = Vector::<i16>::new((0, 0), (-1, 1));
+        let v32 = Vector::<i32>::new((0, 0), (-1, 1));
+        let v64 = Vector::<i64>::new((0, 0), (-1, 1));
+
+        let v8_to_16 = Vector::<i16>::from(v8);
+        let _: Vector<i16> = v8.into();
+        assert_eq!(v8_to_16.begin.0, 0_i16);
+        assert_eq!(v8_to_16.begin.1, 0_i16);
+        assert_eq!(v8_to_16.coord.0, -1_i16);
+        assert_eq!(v8_to_16.coord.1, 1_i16);
+
+        let v8_to_32 = Vector::<i32>::from(v8);
+        let _: Vector<i32> = v8.into();
+        assert_eq!(v8_to_32.begin.0, 0_i32);
+        assert_eq!(v8_to_32.begin.1, 0_i32);
+        assert_eq!(v8_to_32.coord.0, -1_i32);
+        assert_eq!(v8_to_32.coord.1, 1_i32);
+
+        let v8_to_64 = Vector::<i64>::from(v8);
+        let _: Vector<i64> = v8.into();
+        assert_eq!(v8_to_64.begin.0, 0_i64);
+        assert_eq!(v8_to_64.begin.1, 0_i64);
+        assert_eq!(v8_to_64.coord.0, -1_i64);
+        assert_eq!(v8_to_64.coord.1, 1_i64);
+
+        let v8_to_128 = Vector::<i128>::from(v8);
+        let _: Vector<i128> = v8.into();
+        assert_eq!(v8_to_128.begin.0, 0_i128);
+        assert_eq!(v8_to_128.begin.1, 0_i128);
+        assert_eq!(v8_to_128.coord.0, -1_i128);
+        assert_eq!(v8_to_128.coord.1, 1_i128);
+
+        let v8_to_isize = Vector::<isize>::from(v8);
+        let _: Vector<isize> = v8.into();
+        assert_eq!(v8_to_isize.begin.0, 0_isize);
+        assert_eq!(v8_to_isize.begin.1, 0_isize);
+        assert_eq!(v8_to_isize.coord.0, -1_isize);
+        assert_eq!(v8_to_isize.coord.1, 1_isize);
+
+        let v16_to_32 = Vector::<i32>::from(v16);
+        let _: Vector<i32> = v16.into();
+        assert_eq!(v16_to_32.begin.0, 0_i32);
+        assert_eq!(v16_to_32.begin.1, 0_i32);
+        assert_eq!(v16_to_32.coord.0, -1_i32);
+        assert_eq!(v16_to_32.coord.1, 1_i32);
+
+        let v16_to_64 = Vector::<i64>::from(v16);
+        let _: Vector<i64> = v16.into();
+        assert_eq!(v16_to_64.begin.0, 0_i64);
+        assert_eq!(v16_to_64.begin.1, 0_i64);
+        assert_eq!(v16_to_64.coord.0, -1_i64);
+        assert_eq!(v16_to_64.coord.1, 1_i64);
+
+        let v16_to_128 = Vector::<i128>::from(v16);
+        let _: Vector<i128> = v16.into();
+        assert_eq!(v16_to_128.begin.0, 0_i128);
+        assert_eq!(v16_to_128.begin.1, 0_i128);
+        assert_eq!(v16_to_128.coord.0, -1_i128);
+        assert_eq!(v16_to_128.coord.1, 1_i128);
+
+        let v32_to_64 = Vector::<i64>::from(v32);
+        let _: Vector<i64> = v32.into();
+        assert_eq!(v32_to_64.begin.0, 0_i64);
+        assert_eq!(v32_to_64.begin.1, 0_i64);
+        assert_eq!(v32_to_64.coord.0, -1_i64);
+        assert_eq!(v32_to_64.coord.1, 1_i64);
+
+        let v32_to_128 = Vector::<i128>::from(v32);
+        let _: Vector<i128> = v32.into();
+        assert_eq!(v32_to_128.begin.0, 0_i128);
+        assert_eq!(v32_to_128.begin.1, 0_i128);
+        assert_eq!(v32_to_128.coord.0, -1_i128);
+        assert_eq!(v32_to_128.coord.1, 1_i128);
+
+        let v64_to_128 = Vector::<i128>::from(v64);
+        let _: Vector<i128> = v64.into();
+        assert_eq!(v64_to_128.begin.0, 0_i128);
+        assert_eq!(v64_to_128.begin.1, 0_i128);
+        assert_eq!(v64_to_128.coord.0, -1_i128);
+        assert_eq!(v64_to_128.coord.1, 1_i128);
+    }
+
+    #[test]
+    fn vector_signed_int_to_float_type_casts() {
+        let v8 = Vector::<i8>::new((0, 0), (-1, 1));
+        let v16 = Vector::<i16>::new((0, 0), (-1, 1));
+        let v32 = Vector::<i32>::new((0, 0), (-1, 1));
+
+        let v8_to_f32 = Vector::<f32>::from(v8);
+        let _: Vector<f32> = v8.into();
+        assert_relative_eq!(v8_to_f32.begin.0, 0.0_f32);
+        assert_relative_eq!(v8_to_f32.begin.1, 0.0_f32);
+        assert_relative_eq!(v8_to_f32.coord.0, -1.0_f32);
+        assert_relative_eq!(v8_to_f32.coord.1, 1.0_f32);
+
+        let v8_to_f64 = Vector::<f64>::from(v8);
+        let _: Vector<f64> = v8.into();
+        assert_relative_eq!(v8_to_f64.begin.0, 0.0_f64);
+        assert_relative_eq!(v8_to_f64.begin.1, 0.0_f64);
+        assert_relative_eq!(v8_to_f64.coord.0, -1.0_f64);
+        assert_relative_eq!(v8_to_f64.coord.1, 1.0_f64);
+
+        let v16_to_f32 = Vector::<f32>::from(v16);
+        let _: Vector<f32> = v16.into();
+        assert_relative_eq!(v16_to_f32.begin.0, 0.0_f32);
+        assert_relative_eq!(v16_to_f32.begin.1, 0.0_f32);
+        assert_relative_eq!(v16_to_f32.coord.0, -1.0_f32);
+        assert_relative_eq!(v16_to_f32.coord.1, 1.0_f32);
+
+        let v16_to_f64 = Vector::<f64>::from(v16);
+        let _: Vector<f64> = v16.into();
+        assert_relative_eq!(v16_to_f64.begin.0, 0.0_f64);
+        assert_relative_eq!(v16_to_f64.begin.1, 0.0_f64);
+        assert_relative_eq!(v16_to_f64.coord.0, -1.0_f64);
+        assert_relative_eq!(v16_to_f64.coord.1, 1.0_f64);
+
+        let v32_to_f64 = Vector::<f64>::from(v32);
+        let _: Vector<f64> = v32.into();
+        assert_relative_eq!(v32_to_f64.begin.0, 0.0_f64);
+        assert_relative_eq!(v32_to_f64.begin.1, 0.0_f64);
+        assert_relative_eq!(v32_to_f64.coord.0, -1.0_f64);
+        assert_relative_eq!(v32_to_f64.coord.1, 1.0_f64);
+    }
+
+    #[test]
+    fn vector_unsigned_int_to_float_type_casts() {
+        let v8 = Vector::<u8>::new((0, 0), (1, 1));
+        let v16 = Vector::<u16>::new((0, 0), (1, 1));
+        let v32 = Vector::<u32>::new((0, 0), (1, 1));
+
+        let v8_to_f32 = Vector::<f32>::from(v8);
+        let _: Vector<f32> = v8.into();
+        assert_relative_eq!(v8_to_f32.begin.0, 0.0_f32);
+        assert_relative_eq!(v8_to_f32.begin.1, 0.0_f32);
+        assert_relative_eq!(v8_to_f32.coord.0, 1.0_f32);
+        assert_relative_eq!(v8_to_f32.coord.1, 1.0_f32);
+
+        let v8_to_f64 = Vector::<f64>::from(v8);
+        let _: Vector<f64> = v8.into();
+        assert_relative_eq!(v8_to_f64.begin.0, 0.0_f64);
+        assert_relative_eq!(v8_to_f64.begin.1, 0.0_f64);
+        assert_relative_eq!(v8_to_f64.coord.0, 1.0_f64);
+        assert_relative_eq!(v8_to_f64.coord.1, 1.0_f64);
+
+        let v16_to_f32 = Vector::<f32>::from(v16);
+        let _: Vector<f32> = v16.into();
+        assert_relative_eq!(v16_to_f32.begin.0, 0.0_f32);
+        assert_relative_eq!(v16_to_f32.begin.1, 0.0_f32);
+        assert_relative_eq!(v16_to_f32.coord.0, 1.0_f32);
+        assert_relative_eq!(v16_to_f32.coord.1, 1.0_f32);
+
+        let v16_to_f64 = Vector::<f64>::from(v16);
+        let _: Vector<f64> = v16.into();
+        assert_relative_eq!(v16_to_f64.begin.0, 0.0_f64);
+        assert_relative_eq!(v16_to_f64.begin.1, 0.0_f64);
+        assert_relative_eq!(v16_to_f64.coord.0, 1.0_f64);
+        assert_relative_eq!(v16_to_f64.coord.1, 1.0_f64);
+
+        let v32_to_f64 = Vector::<f64>::from(v32);
+        let _: Vector<f64> = v32.into();
+        assert_relative_eq!(v32_to_f64.begin.0, 0.0_f64);
+        assert_relative_eq!(v32_to_f64.begin.1, 0.0_f64);
+        assert_relative_eq!(v32_to_f64.coord.0, 1.0_f64);
+        assert_relative_eq!(v32_to_f64.coord.1, 1.0_f64);
+    }
+
+    #[test]
+    fn vector_unsigned_int_to_signed_int_type_casts() {
+        let v8 = Vector::<u8>::new((0, 0), (1, 1));
+        let v16 = Vector::<u16>::new((0, 0), (1, 1));
+        let v32 = Vector::<u32>::new((0, 0), (1, 1));
+        let v64 = Vector::<u64>::new((0, 0), (1, 1));
+
+        let v8_to_16 = Vector::<i16>::from(v8);
+        let _: Vector<i16> = v8.into();
+        assert_eq!(v8_to_16.begin.0, 0_i16);
+        assert_eq!(v8_to_16.begin.1, 0_i16);
+        assert_eq!(v8_to_16.coord.0, 1_i16);
+        assert_eq!(v8_to_16.coord.1, 1_i16);
+
+        let v8_to_32 = Vector::<i32>::from(v8);
+        let _: Vector<i32> = v8.into();
+        assert_eq!(v8_to_32.begin.0, 0_i32);
+        assert_eq!(v8_to_32.begin.1, 0_i32);
+        assert_eq!(v8_to_32.coord.0, 1_i32);
+        assert_eq!(v8_to_32.coord.1, 1_i32);
+
+        let v8_to_64 = Vector::<i64>::from(v8);
+        let _: Vector<i64> = v8.into();
+        assert_eq!(v8_to_64.begin.0, 0_i64);
+        assert_eq!(v8_to_64.begin.1, 0_i64);
+        assert_eq!(v8_to_64.coord.0, 1_i64);
+        assert_eq!(v8_to_64.coord.1, 1_i64);
+
+        let v8_to_128 = Vector::<i128>::from(v8);
+        let _: Vector<i128> = v8.into();
+        assert_eq!(v8_to_128.begin.0, 0_i128);
+        assert_eq!(v8_to_128.begin.1, 0_i128);
+        assert_eq!(v8_to_128.coord.0, 1_i128);
+        assert_eq!(v8_to_128.coord.1, 1_i128);
+
+        let v16_to_32 = Vector::<i32>::from(v16);
+        let _: Vector<i32> = v16.into();
+        assert_eq!(v16_to_32.begin.0, 0_i32);
+        assert_eq!(v16_to_32.begin.1, 0_i32);
+        assert_eq!(v16_to_32.coord.0, 1_i32);
+        assert_eq!(v16_to_32.coord.1, 1_i32);
+
+        let v16_to_64 = Vector::<i64>::from(v16);
+        let _: Vector<i64> = v16.into();
+        assert_eq!(v16_to_64.begin.0, 0_i64);
+        assert_eq!(v16_to_64.begin.1, 0_i64);
+        assert_eq!(v16_to_64.coord.0, 1_i64);
+        assert_eq!(v16_to_64.coord.1, 1_i64);
+
+        let v16_to_128 = Vector::<i128>::from(v16);
+        let _: Vector<i128> = v16.into();
+        assert_eq!(v16_to_128.begin.0, 0_i128);
+        assert_eq!(v16_to_128.begin.1, 0_i128);
+        assert_eq!(v16_to_128.coord.0, 1_i128);
+        assert_eq!(v16_to_128.coord.1, 1_i128);
+
+        let v32_to_64 = Vector::<i64>::from(v32);
+        let _: Vector<i64> = v32.into();
+        assert_eq!(v32_to_64.begin.0, 0_i64);
+        assert_eq!(v32_to_64.begin.1, 0_i64);
+        assert_eq!(v32_to_64.coord.0, 1_i64);
+        assert_eq!(v32_to_64.coord.1, 1_i64);
+
+        let v32_to_128 = Vector::<i128>::from(v32);
+        let _: Vector<i128> = v32.into();
+        assert_eq!(v32_to_128.begin.0, 0_i128);
+        assert_eq!(v32_to_128.begin.1, 0_i128);
+        assert_eq!(v32_to_128.coord.0, 1_i128);
+        assert_eq!(v32_to_128.coord.1, 1_i128);
+
+        let v64_to_128 = Vector::<i128>::from(v64);
+        let _: Vector<i128> = v64.into();
+        assert_eq!(v64_to_128.begin.0, 0_i128);
+        assert_eq!(v64_to_128.begin.1, 0_i128);
+        assert_eq!(v64_to_128.coord.0, 1_i128);
+        assert_eq!(v64_to_128.coord.1, 1_i128);
     }
 
     #[test]
@@ -1125,9 +1540,15 @@ mod tests {
         let v6 = Vector::new((-1, -2), (4, 5));
 
         assert_eq!(v1.cw_normal(), v2);
-        // assert_relative_eq!(v1.cw_normal().angle(&v1).to_degrees(), 90.0);
+        assert_relative_eq!(
+            Vector::<f64>::from(v1).cw_normal().angle(&Vector::<f64>::from(v1)).to_degrees(),
+            90.0
+        );
         // preserves magnitude
-        // assert_relative_eq!(v1.cw_normal().magnitude(), v1.magnitude());
+        assert_relative_eq!(
+            Vector::<f64>::from(v1).cw_normal().magnitude(),
+            Vector::<f64>::from(v1).magnitude()
+        );
         // dot product is zero
         assert_eq!(v1.cw_normal().dot_product(&v1), 0);
         // scalar association
@@ -1138,13 +1559,28 @@ mod tests {
         assert_eq!(v1.cw_normal().cw_normal(), -v1);
 
         assert_eq!(v3.cw_normal(), v4);
-        // assert_relative_eq!(v3.cw_normal().angle(&v3).to_degrees(), 90.0);
-        // assert_relative_eq!(v3.cw_normal().magnitude(), v3.magnitude());
-        // assert_relative_eq!(v5.magnitude(), v6.magnitude());
+        assert_relative_eq!(
+            Vector::<f64>::from(v3).cw_normal().angle(&Vector::<f64>::from(v3)).to_degrees(),
+            90.0
+        );
+        assert_relative_eq!(
+            Vector::<f64>::from(v3).cw_normal().magnitude(),
+            Vector::<f64>::from(v3).magnitude()
+        );
+        assert_relative_eq!(
+            Vector::<f64>::from(v5).magnitude(),
+            Vector::<f64>::from(v6).magnitude()
+        );
 
         assert_eq!(v5.cw_normal(), v6);
-        // assert_relative_eq!(v5.cw_normal().angle(&v5).to_degrees(), 90.0);
-        // assert_relative_eq!(v5.cw_normal().magnitude(), v5.magnitude());
+        assert_relative_eq!(
+            Vector::<f64>::from(v5).cw_normal().angle(&Vector::<f64>::from(v5)).to_degrees(),
+            90.0
+        );
+        assert_relative_eq!(
+            Vector::<f64>::from(v5).cw_normal().magnitude(),
+            Vector::<f64>::from(v5).magnitude()
+        );
         // tests of begin and end coordinate locations in the ccw normal
         assert_eq!(v5.cw_normal().begin.0, -1);
         assert_eq!(v5.cw_normal().begin.1, -2);
@@ -1198,9 +1634,15 @@ mod tests {
         let v5 = Vector::new((-1, -2), (4, 5));
         let v6 = Vector::new((2, -1), (-5, 4));
         assert_eq!(v1.ccw_normal(), v2);
-        // assert_relative_eq!(v1.ccw_normal().angle(&v1).to_degrees(), 90.0);
+        assert_relative_eq!(
+            Vector::<f64>::from(v1).ccw_normal().angle(&Vector::<f64>::from(v1)).to_degrees(),
+            90.0
+        );
         // preserves magnitude
-        // assert_relative_eq!(v1.ccw_normal().magnitude(), v1.magnitude());
+        assert_relative_eq!(
+            Vector::<f64>::from(v1).ccw_normal().magnitude(),
+            Vector::<f64>::from(v1).magnitude()
+        );
         // dot product is zero
         assert_eq!(v1.ccw_normal().dot_product(&v1), 0);
         // scalar association
@@ -1211,13 +1653,28 @@ mod tests {
         assert_eq!(v1.ccw_normal().ccw_normal(), -v1);
 
         assert_eq!(v3.ccw_normal(), v4);
-        // assert_relative_eq!(v3.ccw_normal().angle(&v3).to_degrees(), 90.0);
-        // assert_relative_eq!(v3.ccw_normal().magnitude(), v3.magnitude());
-        // assert_relative_eq!(v5.magnitude(), v6.magnitude());
+        assert_relative_eq!(
+            Vector::<f64>::from(v3).ccw_normal().angle(&Vector::<f64>::from(v3)).to_degrees(),
+            90.0
+        );
+        assert_relative_eq!(
+            Vector::<f64>::from(v3).ccw_normal().magnitude(),
+            Vector::<f64>::from(v3).magnitude()
+        );
+        assert_relative_eq!(
+            Vector::<f64>::from(v5).magnitude(),
+            Vector::<f64>::from(v6).magnitude()
+        );
 
         assert_eq!(v5.ccw_normal(), v6);
-        // assert_relative_eq!(v5.ccw_normal().angle(&v5).to_degrees(), 90.0);
-        // assert_relative_eq!(v5.ccw_normal().magnitude(), v5.magnitude());
+        assert_relative_eq!(
+            Vector::<f64>::from(v5).ccw_normal().angle(&Vector::<f64>::from(v5)).to_degrees(),
+            90.0
+        );
+        assert_relative_eq!(
+            Vector::<f64>::from(v5).ccw_normal().magnitude(),
+            Vector::<f64>::from(v5).magnitude()
+        );
         // tests of begin and end coordinate locations in the ccw normal
         assert_eq!(v5.ccw_normal().begin.0, 2);
         assert_eq!(v5.ccw_normal().begin.1, -1);
