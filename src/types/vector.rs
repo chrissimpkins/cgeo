@@ -113,6 +113,14 @@ where
         self.exterior_product(other).is_zero()
     }
 
+    /// Calculate the angle between two [`Vector`] in radians.
+    pub fn angle(&self, other: &Vector<N>) -> N
+    where
+        N: Float,
+    {
+        self.normalize().dot_product(&other.normalize()).acos()
+    }
+
     // private methods
     fn partial_eq_int(&self, other: &Vector<N>) -> bool {
         (self.coord.0 == other.coord.0) && (self.coord.1 == other.coord.1)
@@ -1067,6 +1075,22 @@ mod tests {
         assert!(!v1.is_collinear(&v3));
         // collinear
         assert!(v1.is_collinear(&v4));
+    }
+
+    #[test]
+    fn vector_angle() {
+        let v1 = Vector::new_bound((0.0, 10.0));
+        let v2 = Vector::new_bound((10.0, 0.0));
+        let v3 = Vector::new_bound((-100.0, 0.0));
+        let v4 = Vector::new_bound((0.0, -25.0));
+        assert_relative_eq!(v1.angle(&v2).to_degrees(), 90.0);
+        assert!(v1.angle(&v2).is_sign_positive());
+        assert_relative_eq!(v2.angle(&v1).to_degrees(), 90.0);
+        assert!(v2.angle(&v1).is_sign_positive());
+        assert_relative_eq!(v2.angle(&v3).to_degrees(), 180.0);
+        assert!(v2.angle(&v3).is_sign_positive());
+        assert_relative_eq!(v2.angle(&v4).to_degrees(), 90.0);
+        assert!(v2.angle(&v4).is_sign_positive());
     }
 
     // =====================
