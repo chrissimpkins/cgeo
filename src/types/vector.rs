@@ -637,21 +637,21 @@ mod tests {
     #[test]
     fn vector_instantiation() {
         let v1 = Vector::new((1, 2), (3, 4));
-        let v2 = Vector::new((1 as i64, 2 as i64), (3 as i64, 4 as i64));
+        let v2 = Vector::new((1_i64, 2_i64), (3_i64, 4_i64));
         let v3 = Vector::new((1.0, 2.0), (3.0, 4.0));
-        let v4 = Vector::new((1.0 as f32, 2.0 as f32), (3.0 as f32, 4.0 as f32));
-        assert_eq!(v1.coord, (2 as i32, 2 as i32));
-        assert_eq!(v1.begin, (1 as i32, 2 as i32));
-        assert_eq!(v2.coord, (2 as i64, 2 as i64));
-        assert_eq!(v2.begin, (1 as i64, 2 as i64));
-        assert_relative_eq!(v3.coord.0, 2.0 as f64);
-        assert_relative_eq!(v3.coord.1, 2.0 as f64);
-        assert_relative_eq!(v3.begin.0, 1.0 as f64);
-        assert_relative_eq!(v3.begin.1, 2.0 as f64);
-        assert_relative_eq!(v4.coord.0, 2.0 as f32);
-        assert_relative_eq!(v4.coord.1, 2.0 as f32);
-        assert_relative_eq!(v4.begin.0, 1.0 as f32);
-        assert_relative_eq!(v4.begin.1, 2.0 as f32);
+        let v4 = Vector::new((1.0_f32, 2.0_f32), (3.0_f32, 4.0_f32));
+        assert_eq!(v1.coord, (2_i32, 2_i32));
+        assert_eq!(v1.begin, (1_i32, 2_i32));
+        assert_eq!(v2.coord, (2_i64, 2_i64));
+        assert_eq!(v2.begin, (1_i64, 2_i64));
+        assert_relative_eq!(v3.coord.0, 2.0_f64);
+        assert_relative_eq!(v3.coord.1, 2.0_f64);
+        assert_relative_eq!(v3.begin.0, 1.0_f64);
+        assert_relative_eq!(v3.begin.1, 2.0_f64);
+        assert_relative_eq!(v4.coord.0, 2.0_f32);
+        assert_relative_eq!(v4.coord.1, 2.0_f32);
+        assert_relative_eq!(v4.begin.0, 1.0_f32);
+        assert_relative_eq!(v4.begin.1, 2.0_f32);
     }
 
     #[test]
