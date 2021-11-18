@@ -82,6 +82,18 @@ where
         (self.coord.0 * other.coord.1) - (self.coord.1 * other.coord.0)
     }
 
+    pub fn is_perpendicular(&self, other: &Vector<N>) -> Result<bool, VectorError> {
+        if (self.coord.0.is_zero() && self.coord.1.is_zero())
+            || (other.coord.0.is_zero() && other.coord.1.is_zero())
+        {
+            return Err(VectorError::ValueError(
+                "Invalid use of a zero vector in the is_perpendicular calculation".into(),
+            ));
+        }
+
+        Ok(self.dot_product(other).is_zero())
+    }
+
     // private methods
     fn partial_eq_int(&self, other: &Vector<N>) -> bool {
         (self.coord.0 == other.coord.0) && (self.coord.1 == other.coord.1)
@@ -942,6 +954,37 @@ mod tests {
         let ep2 = v1.exterior_product(&v4);
         let vec_sum = v2 + v4;
         assert_relative_eq!(v1.exterior_product(&vec_sum), (ep1 + ep2));
+    }
+
+    #[test]
+    fn vector_is_perpendicular() {
+        let v1 = Vector::new_bound((0, 1));
+        let v2 = Vector::new_bound((1, 0));
+        let v3 = Vector::new_bound((3, 4));
+        let v4 = Vector::new_bound((0, 0));
+        assert!(v1.is_perpendicular(&v2).is_ok());
+        assert!(v1.is_perpendicular(&v2).unwrap());
+        assert!(v1.is_perpendicular(&v3).is_ok());
+        assert!(!v1.is_perpendicular(&v3).unwrap());
+        // calculation does not support use of zero vectors
+        assert!(v1.is_perpendicular(&v4).is_err());
+        assert!(v4.is_perpendicular(&v1).is_err());
+        assert!(matches!(v1.is_perpendicular(&v4), Err(VectorError::ValueError(_))));
+        assert!(matches!(v4.is_perpendicular(&v1), Err(VectorError::ValueError(_))));
+
+        let v1 = Vector::new_bound((0.0, 1.0));
+        let v2 = Vector::new_bound((1.0, 0.0));
+        let v3 = Vector::new_bound((3.0, 4.0));
+        let v4 = Vector::new_bound((0.0, 0.0));
+        assert!(v1.is_perpendicular(&v2).is_ok());
+        assert!(v1.is_perpendicular(&v2).unwrap());
+        assert!(v1.is_perpendicular(&v3).is_ok());
+        assert!(!v1.is_perpendicular(&v3).unwrap());
+        // calculation does not support use of zero vectors
+        assert!(v1.is_perpendicular(&v4).is_err());
+        assert!(v4.is_perpendicular(&v1).is_err());
+        assert!(matches!(v1.is_perpendicular(&v4), Err(VectorError::ValueError(_))));
+        assert!(matches!(v4.is_perpendicular(&v1), Err(VectorError::ValueError(_))));
     }
 
     // =====================
