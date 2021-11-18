@@ -1,5 +1,6 @@
 //! Vector types.
 
+use std::cmp::PartialOrd;
 use std::ops::{Add, Mul, Neg, Sub};
 
 use approx::{relative_eq, RelativeEq};
@@ -92,6 +93,20 @@ where
         }
 
         Ok(self.dot_product(other).is_zero())
+    }
+
+    pub fn is_left_of(&self, other: &Vector<N>) -> bool
+    where
+        N: Num + Copy + PartialOrd,
+    {
+        self.exterior_product(other) < N::zero()
+    }
+
+    pub fn is_right_of(&self, other: &Vector<N>) -> bool
+    where
+        N: Num + Copy + PartialOrd,
+    {
+        self.exterior_product(other) > N::zero()
     }
 
     // private methods
@@ -985,6 +1000,48 @@ mod tests {
         assert!(v4.is_perpendicular(&v1).is_err());
         assert!(matches!(v1.is_perpendicular(&v4), Err(VectorError::ValueError(_))));
         assert!(matches!(v4.is_perpendicular(&v1), Err(VectorError::ValueError(_))));
+    }
+
+    #[test]
+    fn vector_is_left_of() {
+        let v1 = Vector::new_bound((2, 2));
+        let v2 = Vector::new_bound((2, 4));
+        let v3 = Vector::new_bound((3, -2));
+        let v4 = Vector::new_bound((1, 1));
+        assert!(!v1.is_left_of(&v2));
+        assert!(v1.is_left_of(&v3));
+        // collinear should not return true
+        assert!(!v1.is_left_of(&v4));
+
+        let v1 = Vector::new_bound((2.0, 2.0));
+        let v2 = Vector::new_bound((2.0, 4.0));
+        let v3 = Vector::new_bound((3.0, -2.0));
+        let v4 = Vector::new_bound((1.0, 1.0));
+        assert!(!v1.is_left_of(&v2));
+        assert!(v1.is_left_of(&v3));
+        // collinear should not return true
+        assert!(!v1.is_left_of(&v4));
+    }
+
+    #[test]
+    fn vector_is_right_of() {
+        let v1 = Vector::new_bound((2, 2));
+        let v2 = Vector::new_bound((2, 4));
+        let v3 = Vector::new_bound((3, -2));
+        let v4 = Vector::new_bound((1, 1));
+        assert!(v1.is_right_of(&v2));
+        assert!(!v1.is_right_of(&v3));
+        // collinear should not return true
+        assert!(!v1.is_right_of(&v4));
+
+        let v1 = Vector::new_bound((2.0, 2.0));
+        let v2 = Vector::new_bound((2.0, 4.0));
+        let v3 = Vector::new_bound((3.0, -2.0));
+        let v4 = Vector::new_bound((1.0, 1.0));
+        assert!(v1.is_right_of(&v2));
+        assert!(!v1.is_right_of(&v3));
+        // collinear should not return true
+        assert!(!v1.is_right_of(&v4));
     }
 
     // =====================
