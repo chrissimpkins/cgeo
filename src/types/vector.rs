@@ -62,7 +62,7 @@ where
         N: Float,
     {
         // uses the dot product approach for performance
-        (self.dot_product(self)).sqrt()
+        self.dot_product(self).sqrt()
     }
 
     pub fn normalize(&self) -> Vector<N>
