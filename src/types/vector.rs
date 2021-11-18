@@ -866,6 +866,16 @@ mod tests {
     }
 
     #[test]
+    fn vector_normalize() {
+        let v1 = Vector::new_bound((25.123, 30.456));
+        let v2 = Vector::new_bound((-25.123, -30.456));
+        assert_relative_eq!(v1.normalize().magnitude(), 1.0);
+        assert_relative_eq!(v2.normalize().magnitude(), 1.0);
+        assert_relative_eq!((v1.normalize() * v1.magnitude()).magnitude(), v1.magnitude());
+        assert_relative_eq!((v2.normalize() * v2.magnitude()).magnitude(), v2.magnitude());
+    }
+
+    #[test]
     fn vector_dot_product() {
         let v1 = Vector::new_bound((1, 2));
         let v2 = Vector::new_bound((3, 4));
