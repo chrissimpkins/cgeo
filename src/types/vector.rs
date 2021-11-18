@@ -109,6 +109,10 @@ where
         self.exterior_product(other) > N::zero()
     }
 
+    pub fn is_collinear(&self, other: &Vector<N>) -> bool {
+        self.exterior_product(other).is_zero()
+    }
+
     // private methods
     fn partial_eq_int(&self, other: &Vector<N>) -> bool {
         (self.coord.0 == other.coord.0) && (self.coord.1 == other.coord.1)
@@ -1042,6 +1046,27 @@ mod tests {
         assert!(!v1.is_right_of(&v3));
         // collinear should not return true
         assert!(!v1.is_right_of(&v4));
+    }
+
+    #[test]
+    fn vector_is_collinear() {
+        let v1 = Vector::new_bound((2, 2));
+        let v2 = Vector::new_bound((2, 4));
+        let v3 = Vector::new_bound((3, -2));
+        let v4 = Vector::new_bound((1, 1));
+        assert!(!v1.is_collinear(&v2));
+        assert!(!v1.is_collinear(&v3));
+        // collinear
+        assert!(v1.is_collinear(&v4));
+
+        let v1 = Vector::new_bound((2.0, 2.0));
+        let v2 = Vector::new_bound((2.0, 4.0));
+        let v3 = Vector::new_bound((3.0, -2.0));
+        let v4 = Vector::new_bound((1.0, 1.0));
+        assert!(!v1.is_collinear(&v2));
+        assert!(!v1.is_collinear(&v3));
+        // collinear
+        assert!(v1.is_collinear(&v4));
     }
 
     // =====================
