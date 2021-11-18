@@ -3,7 +3,7 @@
 use std::ops::{Add, Mul, Neg, Sub};
 
 use approx::{relative_eq, RelativeEq};
-use num::Num;
+use num::{Float, Num};
 
 use crate::error::VectorError;
 use crate::types::coordinate::{F2DCoordinate, I2DCoordinate};
@@ -54,6 +54,24 @@ where
 
     pub fn end(&self) -> (N, N) {
         (self.coord.0 + self.begin.0, self.coord.1 + self.begin.1)
+    }
+
+    /// Euclidean vector magnitude.
+    pub fn magnitude(&self) -> N
+    where
+        N: Float,
+    {
+        // uses the dot product approach for performance
+        (self.dot_product(self)).sqrt()
+    }
+
+    pub fn normalize(&self) -> Vector<N>
+    where
+        N: Float,
+    {
+        let x = self.coord.0 / self.magnitude();
+        let y = self.coord.1 / self.magnitude();
+        Vector::new_bound((x, y))
     }
 
     pub fn dot_product(&self, other: &Vector<N>) -> N {
@@ -837,6 +855,14 @@ mod tests {
         assert_eq!(v3_2.begin, v3.begin);
         assert_ne!(v3_2.end(), v3.end());
         assert_ne!(v3_2, v3);
+    }
+
+    #[test]
+    fn vector_magnitude() {
+        let v1 = Vector::new((1.0, 2.0), (3.0, 4.0));
+        let v2 = Vector::new((-1.0, -2.0), (-3.0, -4.0));
+        assert_relative_eq!(v1.magnitude(), 2.8284271247461903);
+        assert_relative_eq!(v2.magnitude(), 2.8284271247461903);
     }
 
     #[test]
