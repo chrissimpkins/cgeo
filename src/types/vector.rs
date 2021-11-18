@@ -121,6 +121,28 @@ where
         self.normalize().dot_product(&other.normalize()).acos()
     }
 
+    /// Returns the clockwise normal vector.  
+    ///
+    /// This has a magnitude that is equivalent to the original [`Vector`]
+    /// and a coordinate offset that is 90 degrees in the clockwise direction.
+    pub fn cw_normal(&self) -> Self {
+        Self {
+            begin: (self.begin.1, N::zero() - self.begin.0),
+            coord: (self.coord.1, N::zero() - self.coord.0),
+        }
+    }
+
+    /// Returns the counter-clockwise normal vector.  
+    ///
+    /// This has a magnitude that is equivalent to the original [`Vector`]
+    /// and a coordinate offset that is 90 degrees in the counter-clockwise direction.
+    pub fn ccw_normal(&self) -> Self {
+        Self {
+            begin: (N::zero() - self.begin.1, self.begin.0),
+            coord: (N::zero() - self.coord.1, self.coord.0),
+        }
+    }
+
     // private methods
     fn partial_eq_int(&self, other: &Vector<N>) -> bool {
         (self.coord.0 == other.coord.0) && (self.coord.1 == other.coord.1)
@@ -1091,6 +1113,151 @@ mod tests {
         assert!(v2.angle(&v3).is_sign_positive());
         assert_relative_eq!(v2.angle(&v4).to_degrees(), 90.0);
         assert!(v2.angle(&v4).is_sign_positive());
+    }
+
+    #[test]
+    fn vector_cw_normal() {
+        let v1 = Vector::new_bound((0, 10));
+        let v2 = Vector::new_bound((10, 0));
+        let v3 = Vector::new_bound((-25, 1));
+        let v4 = Vector::new_bound((1, 25));
+        let v5 = Vector::new((2, -1), (-5, 4));
+        let v6 = Vector::new((-1, -2), (4, 5));
+
+        assert_eq!(v1.cw_normal(), v2);
+        // assert_relative_eq!(v1.cw_normal().angle(&v1).to_degrees(), 90.0);
+        // preserves magnitude
+        // assert_relative_eq!(v1.cw_normal().magnitude(), v1.magnitude());
+        // dot product is zero
+        assert_eq!(v1.cw_normal().dot_product(&v1), 0);
+        // scalar association
+        assert_eq!((v1 * 6).cw_normal(), v1.cw_normal() * 6);
+        // linear
+        assert_eq!((v1 * 6 + v1 * 8).cw_normal(), (v1 * 6).cw_normal() + (v1 * 8).cw_normal());
+        // anti-potent
+        assert_eq!(v1.cw_normal().cw_normal(), -v1);
+
+        assert_eq!(v3.cw_normal(), v4);
+        // assert_relative_eq!(v3.cw_normal().angle(&v3).to_degrees(), 90.0);
+        // assert_relative_eq!(v3.cw_normal().magnitude(), v3.magnitude());
+        // assert_relative_eq!(v5.magnitude(), v6.magnitude());
+
+        assert_eq!(v5.cw_normal(), v6);
+        // assert_relative_eq!(v5.cw_normal().angle(&v5).to_degrees(), 90.0);
+        // assert_relative_eq!(v5.cw_normal().magnitude(), v5.magnitude());
+        // tests of begin and end coordinate locations in the ccw normal
+        assert_eq!(v5.cw_normal().begin.0, -1);
+        assert_eq!(v5.cw_normal().begin.1, -2);
+        assert_eq!(v5.cw_normal().end().0, 4);
+        assert_eq!(v5.cw_normal().end().1, 5);
+
+        let v1 = Vector::new_bound((0.0, 10.0));
+        let v2 = Vector::new_bound((10.0, 0.0));
+        let v3 = Vector::new_bound((-25.0, 1.0));
+        let v4 = Vector::new_bound((1.0, 25.0));
+        let v5 = Vector::new((2.0, -1.0), (-5.0, 4.0));
+        let v6 = Vector::new((-1.0, -2.0), (4.0, 5.0));
+
+        assert_eq!(v1.cw_normal(), v2);
+        assert_relative_eq!(v1.cw_normal().angle(&v1).to_degrees(), 90.0);
+        // preserves magnitude
+        assert_relative_eq!(v1.cw_normal().magnitude(), v1.magnitude());
+        // dot product is zero
+        assert_relative_eq!(v1.cw_normal().dot_product(&v1), 0.0);
+        // scalar association
+        assert_eq!((v1 * 6.0).cw_normal(), v1.cw_normal() * 6.0);
+        // linear
+        assert_eq!(
+            (v1 * 6.0 + v1 * 8.0).cw_normal(),
+            (v1 * 6.0).cw_normal() + (v1 * 8.0).cw_normal()
+        );
+        // anti-potent
+        assert_eq!(v1.cw_normal().cw_normal(), -v1);
+
+        assert_eq!(v3.cw_normal(), v4);
+        assert_relative_eq!(v3.cw_normal().angle(&v3).to_degrees(), 90.0);
+        assert_relative_eq!(v3.cw_normal().magnitude(), v3.magnitude());
+        assert_relative_eq!(v5.magnitude(), v6.magnitude());
+
+        assert_eq!(v5.cw_normal(), v6);
+        assert_relative_eq!(v5.cw_normal().angle(&v5).to_degrees(), 90.0);
+        assert_relative_eq!(v5.cw_normal().magnitude(), v5.magnitude());
+        // tests of begin and end coordinate locations in the ccw normal
+        assert_eq!(v5.cw_normal().begin.0, -1.0);
+        assert_eq!(v5.cw_normal().begin.1, -2.0);
+        assert_eq!(v5.cw_normal().end().0, 4.0);
+        assert_eq!(v5.cw_normal().end().1, 5.0);
+    }
+
+    #[test]
+    fn vector_ccw_normal() {
+        let v1 = Vector::new_bound((10, 0));
+        let v2 = Vector::new_bound((0, 10));
+        let v3 = Vector::new_bound((1, 25));
+        let v4 = Vector::new_bound((-25, 1));
+        let v5 = Vector::new((-1, -2), (4, 5));
+        let v6 = Vector::new((2, -1), (-5, 4));
+        assert_eq!(v1.ccw_normal(), v2);
+        // assert_relative_eq!(v1.ccw_normal().angle(&v1).to_degrees(), 90.0);
+        // preserves magnitude
+        // assert_relative_eq!(v1.ccw_normal().magnitude(), v1.magnitude());
+        // dot product is zero
+        assert_eq!(v1.ccw_normal().dot_product(&v1), 0);
+        // scalar association
+        assert_eq!((v1 * 6).ccw_normal(), v1.ccw_normal() * 6);
+        // linear
+        assert_eq!((v1 * 6 + v1 * 8).ccw_normal(), (v1 * 6).ccw_normal() + (v1 * 8).ccw_normal());
+        // anti-potent
+        assert_eq!(v1.ccw_normal().ccw_normal(), -v1);
+
+        assert_eq!(v3.ccw_normal(), v4);
+        // assert_relative_eq!(v3.ccw_normal().angle(&v3).to_degrees(), 90.0);
+        // assert_relative_eq!(v3.ccw_normal().magnitude(), v3.magnitude());
+        // assert_relative_eq!(v5.magnitude(), v6.magnitude());
+
+        assert_eq!(v5.ccw_normal(), v6);
+        // assert_relative_eq!(v5.ccw_normal().angle(&v5).to_degrees(), 90.0);
+        // assert_relative_eq!(v5.ccw_normal().magnitude(), v5.magnitude());
+        // tests of begin and end coordinate locations in the ccw normal
+        assert_eq!(v5.ccw_normal().begin.0, 2);
+        assert_eq!(v5.ccw_normal().begin.1, -1);
+        assert_eq!(v5.ccw_normal().end().0, -5);
+        assert_eq!(v5.ccw_normal().end().1, 4);
+
+        let v1 = Vector::new_bound((10.0, 0.0));
+        let v2 = Vector::new_bound((0.0, 10.0));
+        let v3 = Vector::new_bound((1.0, 25.0));
+        let v4 = Vector::new_bound((-25.0, 1.0));
+        let v5 = Vector::new((-1.0, -2.0), (4.0, 5.0));
+        let v6 = Vector::new((2.0, -1.0), (-5.0, 4.0));
+        assert_eq!(v1.ccw_normal(), v2);
+        assert_relative_eq!(v1.ccw_normal().angle(&v1).to_degrees(), 90.0);
+        // preserves magnitude
+        assert_relative_eq!(v1.ccw_normal().magnitude(), v1.magnitude());
+        // dot product is zero
+        assert_relative_eq!(v1.ccw_normal().dot_product(&v1), 0.0);
+        // scalar association
+        assert_eq!((v1 * 6.0).ccw_normal(), v1.ccw_normal() * 6.0);
+        // linear
+        assert_eq!(
+            (v1 * 6.0 + v1 * 8.0).ccw_normal(),
+            (v1 * 6.0).ccw_normal() + (v1 * 8.0).ccw_normal()
+        );
+        // anti-potent
+        assert_eq!(v1.ccw_normal().ccw_normal(), -v1);
+
+        assert_eq!(v3.ccw_normal(), v4);
+        assert_relative_eq!(v3.ccw_normal().angle(&v3).to_degrees(), 90.0);
+        assert_relative_eq!(v3.ccw_normal().magnitude(), v3.magnitude());
+        assert_relative_eq!(v5.magnitude(), v6.magnitude());
+
+        assert_eq!(v5.ccw_normal(), v6);
+        assert_relative_eq!(v5.ccw_normal().angle(&v5).to_degrees(), 90.0);
+        assert_relative_eq!(v5.ccw_normal().magnitude(), v5.magnitude());
+        assert_relative_eq!(v5.ccw_normal().begin.0, 2.0);
+        assert_relative_eq!(v5.ccw_normal().begin.1, -1.0);
+        assert_relative_eq!(v5.ccw_normal().end().0, -5.0);
+        assert_relative_eq!(v5.ccw_normal().end().1, 4.0);
     }
 
     // =====================
