@@ -15,6 +15,18 @@ trait VectorType {
 }
 
 /// A generic 2D vector type.
+///
+// Supports:
+// - default i32 int types
+// - default f64 float types
+// - vector computations in methods
+// - partial equivalence testing (uses relative partial equivalence for float types)
+// - vector and scalar operations with operator overloads
+// - lossless unsigned int to unsigned int type conversion
+// - lossless signed int to signed int type conversion
+// - lossless unigned int to signed int type conversions
+// - lossless signed int to float type conversion
+// - lossless unsigned int to float type conversions
 #[derive(Copy, Clone, Debug)]
 pub struct Vector<N: Num + Copy> {
     pub begin: (N, N),
@@ -205,94 +217,72 @@ where
     }
 }
 
-// TODO: refactor to use a macro to build these impl's
-/// Partial equivalence is defined based on vector magnitude and
+/// PartialEq for vectors with integer types.
+///
+/// Partial equivalence for integer types is defined based on vector magnitude and
 /// direction comparisons only.  Vectors with different begin and
 /// end coordinates are defined as equivalent when they have the same
 /// magnitude and direction but different locations in coordinate space.
-impl PartialEq<Vector<usize>> for Vector<usize> {
-    fn eq(&self, other: &Vector<usize>) -> bool {
-        self.partial_eq_int(other)
-    }
+macro_rules! impl_vector_int_partialeq_from {
+    ($IntTyp: ty, $doc: expr) => {
+        impl PartialEq<Vector<$IntTyp>> for Vector<$IntTyp> {
+            #[doc = $doc]
+            #[inline]
+            fn eq(&self, other: &Vector<$IntTyp>) -> bool {
+                self.partial_eq_int(other)
+            }
+        }
+    };
+    ($IntTyp: ty) => {
+        impl_vector_int_partialeq_from!(
+            $IntTyp,
+            concat!("PartialEq trait implementation for `Vector<", stringify!($IntTyp), ">`")
+        );
+    };
 }
 
-impl PartialEq<Vector<u8>> for Vector<u8> {
-    fn eq(&self, other: &Vector<u8>) -> bool {
-        self.partial_eq_int(other)
-    }
+impl_vector_int_partialeq_from!(usize);
+impl_vector_int_partialeq_from!(u8);
+impl_vector_int_partialeq_from!(u16);
+impl_vector_int_partialeq_from!(u32);
+impl_vector_int_partialeq_from!(u64);
+impl_vector_int_partialeq_from!(u128);
+impl_vector_int_partialeq_from!(isize);
+impl_vector_int_partialeq_from!(i8);
+impl_vector_int_partialeq_from!(i16);
+impl_vector_int_partialeq_from!(i32);
+impl_vector_int_partialeq_from!(i64);
+impl_vector_int_partialeq_from!(i128);
+
+/// PartialEq for vectors with float types.
+///
+/// Partial equivalence for float types is is defined based on vector magnitude and
+/// direction comparisons only.  It is based on relative epsilon float equality testing
+/// using the approx library implementation. This implementation is based on the approach described in
+/// [Comparing Floating Point Numbers, 2012 Edition](https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/)
+///
+/// Vectors with different begin and end coordinates are defined as equivalent when they
+/// have the same magnitude and direction but different locations in coordinate space.
+macro_rules! impl_vector_float_partialeq_from {
+    ($FloatTyp: ty, $doc: expr) => {
+        impl PartialEq<Vector<$FloatTyp>> for Vector<$FloatTyp> {
+            #[doc = $doc]
+            #[inline]
+            fn eq(&self, other: &Vector<$FloatTyp>) -> bool {
+                self.partial_eq_float(other)
+            }
+        }
+    };
+    ($FloatTyp: ty) => {
+        impl_vector_float_partialeq_from!(
+            $FloatTyp,
+            concat!("PartialEq trait implementation for `Vector<", stringify!($FloatTyp), ">`")
+        );
+    };
 }
 
-impl PartialEq<Vector<u16>> for Vector<u16> {
-    fn eq(&self, other: &Vector<u16>) -> bool {
-        self.partial_eq_int(other)
-    }
-}
-
-impl PartialEq<Vector<u32>> for Vector<u32> {
-    fn eq(&self, other: &Vector<u32>) -> bool {
-        self.partial_eq_int(other)
-    }
-}
-
-impl PartialEq<Vector<u64>> for Vector<u64> {
-    fn eq(&self, other: &Vector<u64>) -> bool {
-        self.partial_eq_int(other)
-    }
-}
-
-impl PartialEq<Vector<u128>> for Vector<u128> {
-    fn eq(&self, other: &Vector<u128>) -> bool {
-        self.partial_eq_int(other)
-    }
-}
-
-impl PartialEq<Vector<isize>> for Vector<isize> {
-    fn eq(&self, other: &Vector<isize>) -> bool {
-        self.partial_eq_int(other)
-    }
-}
-
-impl PartialEq<Vector<i8>> for Vector<i8> {
-    fn eq(&self, other: &Vector<i8>) -> bool {
-        self.partial_eq_int(other)
-    }
-}
-
-impl PartialEq<Vector<i16>> for Vector<i16> {
-    fn eq(&self, other: &Vector<i16>) -> bool {
-        self.partial_eq_int(other)
-    }
-}
-
-impl PartialEq<Vector<i32>> for Vector<i32> {
-    fn eq(&self, other: &Vector<i32>) -> bool {
-        self.partial_eq_int(other)
-    }
-}
-
-impl PartialEq<Vector<i64>> for Vector<i64> {
-    fn eq(&self, other: &Vector<i64>) -> bool {
-        self.partial_eq_int(other)
-    }
-}
-
-impl PartialEq<Vector<i128>> for Vector<i128> {
-    fn eq(&self, other: &Vector<i128>) -> bool {
-        self.partial_eq_int(other)
-    }
-}
-
-impl PartialEq<Vector<f32>> for Vector<f32> {
-    fn eq(&self, other: &Vector<f32>) -> bool {
-        self.partial_eq_float(other)
-    }
-}
-
-impl PartialEq<Vector<f64>> for Vector<f64> {
-    fn eq(&self, other: &Vector<f64>) -> bool {
-        self.partial_eq_float(other)
-    }
-}
+impl_vector_float_partialeq_from!(f32);
+impl_vector_float_partialeq_from!(f64);
 
 // Lossless Vector numeric type conversion support with the From trait
 macro_rules! impl_vector_from {
